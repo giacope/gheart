@@ -244,7 +244,11 @@ export class Auth {
     const state = String(req.query.state || '');
     const expiry = this.pendingStates.get(state);
     this.pendingStates.delete(state);
-    if (!app || !code || !expiry || expiry < Date.now()) {
+    const fromLogin = expiry !== undefined && expiry >= Date.now();
+    // With request_oauth_on_install, GitHub redirects here on its own after an
+    // app install, sending code + setup_action but no state of ours.
+    const fromInstall = !state && Boolean(req.query.setup_action);
+    if (!app || !code || (!fromLogin && !fromInstall)) {
       res.status(400).send('gheart: OAuth state mismatch or expired — try signing in again.');
       return;
     }
@@ -257,7 +261,9 @@ export class Auth {
           client_id: app.clientId,
           client_secret: app.clientSecret,
           code,
-          redirect_uri: `${this.baseUrl(req)}/api/auth/callback`,
+          // Only echo redirect_uri for flows we initiated — the install
+          // redirect's authorize step never had one.
+          ...(fromLogin ? { redirect_uri: `${this.baseUrl(req)}/api/auth/callback` } : {}),
         }),
       });
       const tokenBody = (await tokenRes.json()) as TokenResponse;
