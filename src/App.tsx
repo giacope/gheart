@@ -306,7 +306,14 @@ export default function App() {
         )}
       </main>
 
-      {brainOpen && <BrainPanel currentPrs={prs} onClose={() => setBrainOpen(false)} />}
+      {brainOpen && (
+        <BrainPanel
+          currentPrs={prs}
+          history={history}
+          demo={demo}
+          onClose={() => setBrainOpen(false)}
+        />
+      )}
       {match && <MatchOverlay pr={match} />}
       {pendingReject && <ReasonChips pr={pendingReject} onSubmit={handleReasons} />}
       {pendingApprove && (
