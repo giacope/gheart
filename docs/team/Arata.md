@@ -1,13 +1,13 @@
 
-はじめまして、Arata ([https://www.linkedin.com/in/arata-jingu/](https://www.linkedin.com/in/arata-jingu/ "https://www.linkedin.com/in/arata-jingu/")) といいます！ソロで飛び入り参加することになりまして、今東京から新幹線で向かってます、よろしくお願いします！
+Nice to meet you, I'm Arata ([https://www.linkedin.com/in/arata-jingu/](https://www.linkedin.com/in/arata-jingu/ "https://www.linkedin.com/in/arata-jingu/")). I'm joining solo as a last-minute walk-in, and I'm on the Shinkansen from Tokyo right now on my way over — nice to meet you all!
 
-現在Sakana AIの防衛チームでResearch/Software engineerをやっています(ドローンとか扱ってます)が、8月から某ヒューマノイドの会社に転職してPhysical AIモデル作成に取り組む予定です。以前は英語圏でXR/触覚のPhDをやっており、英語話せます。
+I'm currently a Research/Software Engineer on the defense team at Sakana AI (I work on things like drones), but starting in August I'll be moving to a humanoid robotics company to work on building Physical AI models. Before that, I did my PhD in XR/haptics in an English-speaking country, so I can speak English.
 
-Lumaに書いてあったRFS Summer 2026の中で一番興味あるのは、現状Company Brainです。会社柄機密情報を扱うことが多く、その状態でAI開発やプロジェクトを回そうとする際に色々難儀なことが出てくるので、そういうのをAI-nativeにまるっと解決するCompany Brainとかどうかな〜と思ってます。それ以外にも強いアイデアありましたら是非！
+Among the RFS Summer 2026 ideas listed on Luma, the one I'm most interested in right now is Company Brain. Because of the nature of my company, I often deal with confidential information, and that creates all sorts of difficulties when trying to run AI development and projects under those conditions. So I've been thinking that a Company Brain that solves that kind of problem end-to-end in an AI-native way could be interesting. If you have other strong ideas though, I'd love to hear them!
 
-チームまだ組んでなくて、webエンジニアや英語スライド/ストーリー作成が得意な人と組めたら嬉しいです！せっかく東京からこれだけのために来たのでハッカソン勝ちに行く気概でやれたらと思っています :🙂:
+I don't have a team yet, and I'd love to team up with a web engineer or someone good at creating English slides/storytelling! Since I came all the way from Tokyo just for this, I'd like to go in with the mindset of actually winning the hackathon :🙂:
 
-また自分は1年以内にUSグリーンカード取得できそうで、その後日米拠点でスタートアップやろうと思ってるので、そういう知り合い・ネットワーキングもウェルカムです！よろしくお願いします！
+Also, I'm likely to get my US green card within a year, and after that I'm planning to build a startup based in both Japan and the US, so I'd welcome connecting or networking with people interested in that too! Nice to meet you all!
 
 Hi everyone, I’m currently a Research/Software Engineer on the defense team at Sakana AI, working on projects involving drones and related systems. Starting in August, I’ll be joining a humanoid robotics company to work on Physical AI model development. Before that, I did my PhD in XR/haptics in an English-speaking research environment, so I’m comfortable working and presenting in English.
 
@@ -73,8 +73,8 @@ Tokyo, Japan · Hybrid
 - Sakana AI is currently one of Japan’s highest-valued unicorn companies
 - Python, React/typescript, GCP
 
-Thumbnail for Sakana AI、防衛イノベーション科学技術研究所からの委託研究を開始
-Sakana AI、防衛イノベーション科学技術研究所からの委託研究を開始
+Thumbnail for Sakana AI Starts Commissioned Research from the Defense Innovation Science and Technology Institute
+Sakana AI Starts Commissioned Research from the Defense Innovation Science and Technology Institute
 
  Artificial Intelligence (AI), Defense and +2 skills
 

@@ -1,152 +1,152 @@
-# 競合調査: agent-first チャット/コラボレーションシステム
+# Competitive Research: agent-first chat/collaboration systems
 
-調査日: 2026-07-05
-対象: YC RFS ハッカソン(5時間開発・90秒デモ・YC審査員)向け
+Research date: 2026-07-05
+Target: YC RFS hackathon (5-hour build, 90-second demo, YC judges)
 
-前提: チーム構想は「Slack を AI-first で作り直す。エージェントが一級参加者(first-class participant)として振る舞い、チャネル内で応答として動的 UI を生成し、チャットが会社の知識の起点(source of truth)になる」というagent-nativeなチーム・コラボレーション基盤。
-
----
-
-## 1. 最重要: Linzumi(審査員 Sean Grove 創業)
-
-### 1.1 会社概要
-
-- **社名**: Linzumi / プロダクト名"Codex commander"表記あり
-- **創業者**: Sean Grove。元OpenAIでpost-training/alignment研究(model-spec、deliberative alignment)に従事。過去にOneGraph創業(Netlifyが買収)、Netlify Chief Architect。今回が3社目・3度目のYCバッチ。
-- **YCバッチ**: Spring 2026、ステータスActive、チーム3名、拠点サンフランシスコ、担当パートナーGarry Tan。
-  出典: [Y Combinator: Linzumi](https://www.ycombinator.com/companies/linzumi)
-- **ローンチ発信**: YC公式Xアカウントが "Bring your whole team and dozens of AI coding agents into the same chat threads" と紹介。Wafer.ai(GLM 5.2)とのパートナーシップで無料枠提供。
-  出典: [Y Combinator on X](https://x.com/ycombinator/status/2069465556433211583)
-- Garry Tanのコメント: "Linzumi is Codex but actually multiplayer"「magical for teams」。ローンチ後の反応は肯定的(94.4%ポジティブ、との報道)。
-  出典: [Digg記事](https://digg.com/tech/bnuy2maq)
-
-### 1.2 プロダクトの実態・スコープ
-
-公式サイト([linzumi.com](https://linzumi.com/))のキャッチコピーは **"A familiar team chat with a fleet of coding agents inside every channel"**、および **"Your team in the thread, your coding agents on your own machine"**。
-
-主要機能:
-- **チャネル=エージェント実行の場**: 1スレッド内でエージェントがコード変更を実装→diff表示→テスト結果投稿までを完結。チームメンバーはスレッド内でレビュー・指示変更が可能。
-- **Continuous Context Compilation**: チームの意思決定(「何を作るか」「なぜ変えたか」「誰が承認したか」)を継続的に記録し、コンテキスト復元の手間を減らす。
-- **Decision Inbox**: 人間の判断が必要な項目だけを抽出して通知。「エージェントのfleetを操縦する一つの共有インターフェース」という位置づけ。
-- **セキュリティ統制**: ディレクトリ単位のアクセス制御、ネットワーク送信・リポジトリ書き込みは明示承認必須、セッション終了時に権限失効。
-- **モバイル対応**: スマホからもエージェントの進捗監視・指示変更が可能。
-- **対応エージェント**: 現状Codexが主軸("Codex commander")、Claude Code統合は"coming soon"と報道あり(YC説明文より)。
-- **価格**: Personal無料 / Company $100/月(ユーザー数無制限、seat課金なし)/ Enterprise要問い合わせ(SSO/SAML、自社ホスティング)。
-  出典: [linzumi.com](https://linzumi.com/), [YC company page](https://www.ycombinator.com/companies/linzumi)
-
-### 1.3 ポジショニング(創業者の問題意識)
-
-Sean Groveの主張: 「実行(コード生成)はほぼ無料になった一方、**人間の意思決定と検証が新たなボトルネック**になっている」。複数エージェントを並行運用すると、承認がSlackのスレッドに埋もれる/エージェントが人間の判断待ちで止まる、という課題に対処する。ビジョンは「誰もが1,000体のAIエージェント企業のCEOになれるようにする」。
-出典: [YC company page](https://www.ycombinator.com/companies/linzumi)
-
-### 1.4 私たちの構想との重複・差異分析【分析】
-
-**重複する部分:**
-- 「チャット(スレッド/チャネル)をAIエージェント運用の中心に据える」という基本アーキテクチャは同一。
-- 「エージェントの作業がチャット内に可視化され、チームがそこでレビュー・介入する」という体験も類似。
-- 審査員Sean Grove自身が「チャットでエージェントを指揮する」領域のプレイヤーである、という事実は動かない。
-
-**明確に異なる部分:**
-- **スコープの射程**: Linzumiは名指しで「コーディングエージェントのfleetを統制する開発ツール」。対象はソフトウェア開発チームのエンジニアリングワークフロー(コード変更・diff・テスト・PR)に限定されている。私たちの構想は「組織全体のインターフェース」――営業・サポート・PM・経営判断など、コード生成に限らない汎用エージェント参加を志向できる。
-- **エージェントの役割**: Linzumiのエージェントは基本「指示されたコーディングタスクを実行する下請け」であり、UIとして提示されるのは主にdiff/テスト結果というコード成果物。私たちの構想における「エージェントが動的UIを生成する」は、コード変更に限らずダッシュボード・フォーム・意思決定ツールなど**あらゆる応答をアプリケーション的UIとして描画する**という、より汎用的なgenerative UIレイヤーを狙える。
-- **ナレッジの起点という主張**: Linzumiの「Continuous Context Compilation」は決定履歴のログ化に近く、コーディング文脈の意思決定監査が主眼。私たちが掲げる「チャットが会社の知識の起点になる」は、意思決定ログに留まらずチャット自体をナレッジベース/検索基盤として位置づける、より広いナレッジ経営の主張になり得る。
-
-**ピッチ機会とリスク【分析】**:
-- 機会: 審査員の土俵に片足を置きつつ「Linzumiはcoding agentの統制、私たちは組織全体のインターフェース」という一行で明確に差別化できれば、「審査員の専門性に敬意を払いつつ隣接領域で戦っている」という好印象を作れる。
-- リスク: 差別化が曖昧なまま出すと「Linzumiの縮小版/劣化コピー」と読まれる危険が高い。90秒デモでは冒頭で「これはLinzumiではない、対象は非エンジニア含む全社員」であることを明示する一言が必須。
-- 未確認: Linzumiが実際に「非コーディング業務」への展開を計画しているかどうかは公開情報からは確認できない(現状の訴求はエンジニアリングチームに一貫して限定)。
+Premise: The team's concept is "rebuild Slack AI-first. Agents behave as first-class participants, generating dynamic UI as responses within channels, and chat becomes the source of truth for company knowledge" — an agent-native team collaboration platform.
 
 ---
 
-## 2. agent-nativeチャット/コラボの既存プレイヤー(2025–2026)
+## 1. Most important: Linzumi (founded by judge Sean Grove)
 
-分類軸: **(A) AI後付け型(既存チャットにAIをアドオン)** か **(B) agent-first型(エージェントが一級参加者/システム自体がagent-native)**。
+### 1.1 Company overview
 
-| プレイヤー | 分類 | 概要 | 出典 |
+- **Company name**: Linzumi / product also referred to as "Codex commander"
+- **Founder**: Sean Grove. Previously worked on post-training/alignment research (model-spec, deliberative alignment) at OpenAI. Previously founded OneGraph (acquired by Netlify), and was Netlify Chief Architect. This is his 3rd company and 3rd YC batch.
+- **YC batch**: Spring 2026, status Active, team of 3, based in San Francisco, partner Garry Tan.
+  Source: [Y Combinator: Linzumi](https://www.ycombinator.com/companies/linzumi)
+- **Launch announcement**: YC's official X account introduced it as "Bring your whole team and dozens of AI coding agents into the same chat threads." Free tier offered via partnership with Wafer.ai (GLM 5.2).
+  Source: [Y Combinator on X](https://x.com/ycombinator/status/2069465556433211583)
+- Garry Tan's comment: "Linzumi is Codex but actually multiplayer" / "magical for teams." Reaction after launch reported as positive (94.4% positive, per reports).
+  Source: [Digg article](https://digg.com/tech/bnuy2maq)
+
+### 1.2 Actual product scope
+
+The official site ([linzumi.com](https://linzumi.com/)) taglines are **"A familiar team chat with a fleet of coding agents inside every channel"** and **"Your team in the thread, your coding agents on your own machine"**.
+
+Key features:
+- **Channels as the venue for agent execution**: Within a single thread, agents implement code changes → show diffs → post test results, all end-to-end. Team members can review and redirect instructions within the thread.
+- **Continuous Context Compilation**: Continuously records team decisions ("what to build," "why it changed," "who approved it") to reduce the overhead of context recovery.
+- **Decision Inbox**: Extracts and notifies only the items that need human judgment. Positioned as "a single shared interface for piloting a fleet of agents."
+- **Security controls**: Directory-level access control, explicit approval required for network egress and repo writes, permissions expire at session end.
+- **Mobile support**: Agent progress can be monitored and instructions changed from a phone.
+- **Supported agents**: Codex is currently the primary agent ("Codex commander"); Claude Code integration reported as "coming soon" (per the YC description).
+- **Pricing**: Personal free / Company $100/month (unlimited users, no per-seat billing) / Enterprise contact sales (SSO/SAML, self-hosting).
+  Source: [linzumi.com](https://linzumi.com/), [YC company page](https://www.ycombinator.com/companies/linzumi)
+
+### 1.3 Positioning (founder's problem framing)
+
+Sean Grove's thesis: "Execution (code generation) has become nearly free, while **human decision-making and verification have become the new bottleneck**." Running multiple agents in parallel creates problems where approvals get buried in Slack threads, or agents stall waiting on human judgment. The vision is "to let anyone become the CEO of a 1,000-agent AI company."
+Source: [YC company page](https://www.ycombinator.com/companies/linzumi)
+
+### 1.4 Overlap and differences with our concept [Analysis]
+
+**Overlapping areas:**
+- The basic architecture of "placing chat (threads/channels) at the center of AI agent operations" is the same.
+- The experience of "agent work being visualized in chat, with the team reviewing and intervening there" is also similar.
+- The fact that judge Sean Grove himself is a player in the "commanding agents via chat" space is unavoidable.
+
+**Clearly different areas:**
+- **Scope**: Linzumi explicitly is "a dev tool that governs a fleet of coding agents." Its target is limited to software engineering workflows (code changes, diffs, tests, PRs). Our concept can aim to be "an interface for the whole organization" — enabling general-purpose agent participation across sales, support, PM, and executive decision-making, not just code generation.
+- **Role of the agent**: Linzumi's agents are essentially "subcontractors executing assigned coding tasks," and the UI presented is mainly code artifacts like diffs/test results. Our concept's "agents generate dynamic UI as responses" can aim for a more general-purpose generative UI layer that **renders any response as application-like UI** — dashboards, forms, decision tools — not limited to code changes.
+- **Claim of being the origin of knowledge**: Linzumi's "Continuous Context Compilation" is closer to logging decision history, focused on auditing decisions in a coding context. Our claim that "chat becomes the origin of company knowledge" can be a broader knowledge-management claim that positions chat itself as a knowledge base/search foundation, not just a decision log.
+
+**Pitch opportunities and risks [Analysis]**:
+- Opportunity: If we can clearly differentiate with one line — "Linzumi governs coding agents, we are an interface for the whole organization" — while standing partly on the judge's home turf, we can create a good impression of "respecting the judge's expertise while competing in an adjacent space."
+- Risk: If the differentiation is left vague, there's a high risk of being read as "a smaller/inferior copy of Linzumi." In the 90-second demo, an opening line making clear "this is not Linzumi — our target includes non-engineers across the whole company" is essential.
+- Unconfirmed: Whether Linzumi actually plans to expand into "non-coding work" cannot be confirmed from public information (its current messaging is consistently limited to engineering teams).
+
+---
+
+## 2. Existing players in agent-native chat/collaboration (2025-2026)
+
+Classification axis: **(A) AI-bolted-on type (AI added onto existing chat as an add-on)** vs. **(B) agent-first type (agents are first-class participants / the system itself is agent-native)**.
+
+| Player | Category | Overview | Source |
 |---|---|---|---|
-| **Slack Agentforce 2.0** | (A) 後付け型 | 既存Slackチャネル/DM/スレッドにAgentforceを@mentionで召喚。Channel Expertエージェントが常駐しチャネル内知識に回答。Agent BuilderにSlack向けpre-built actions(Create Canvas、Message Channel等)。 | [Slack Blog](https://slack.com/blog/news/limitless-workforce-with-agentforce-in-slack), [Slack AI Agents](https://slack.com/ai-agents) |
-| **Slack Block Kit エージェント新コンポーネント** | (A→中間) | 2026年4月15日発表。Card/Alert/Carousel/Data Table/Work Object/Codeの6種を追加し、エージェント応答を「壁のようなテキスト」から構造化UIへ転換する狙い。Card(アイコン・タイトル・ヒーロー画像・アクションボタン)、Carousel(最大10枚横スクロール)、Data Table(表形式を直接レンダー、近日提供)。 | [Slack Dev Blog](https://slack.dev/build-richer-agent-experiences-with-block-kit/) |
-| **Claude Tag(Anthropicの新Slack統合)** | (B)寄り | 2026年6月23日ベータ公開。旧「Claude in Slack」アプリを置き換え、**チャネルにつき1体の永続Claude**が全員と対話(ユーザーごとのインスタンスではない)。Opus 4.8で駆動。**ambient挙動**が特徴的で、監視対象チャネル・ツールから能動的に情報を拾い上げ、放置されたスレッドをフォローアップする=受動応答から能動的モニタリングへ拡張。旧アプリは2026年8月3日廃止予定。 | [Anthropic公式](https://www.anthropic.com/news/introducing-claude-tag), [TechCrunch](https://techcrunch.com/2026/06/23/anthropics-claude-tag-is-learning-your-company-one-slack-message-at-a-time/), [VentureBeat](https://venturebeat.com/technology/anthropic-launches-claude-tag-replacing-its-slack-app-with-a-persistent-ai-teammate-that-learns-monitors-and-works-autonomously) |
-| **Microsoft Teams / Copilot Studio マルチエージェント** | (A)強め、一部(B)的機能 | Copilot Studioのマルチエージェントオーケストレーションが2026年にGA拡大。Agent-to-Agent(A2A)通信、Fabricエージェント連携。**Copilot Studioで構築したエージェントはCopilot Chat内にリッチなインタラクティブapp体験を直接表示可能**(データ確認・レコード更新・承認・アセット作成をチャット内で完結)――これは「チャネル内での動的UI生成」に近い先行事例。 | [Microsoft Copilot Blog](https://www.microsoft.com/en-us/microsoft-copilot/blog/copilot-studio/new-and-improved-multi-agent-orchestration-connected-experiences-and-faster-prompt-iteration/) |
-| **Dust**(パリ拠点、Sequoia/Abstract出資) | (B) multiplayer AI | 「孤立したチャットボット」から「人間とエージェントが同じ情報・権限・通知・成果物・目標を共有するmultiplayerシステム」への転換を掲げる。2026年5月に$40M調達(Series B)。3,000超の組織が利用、30万超のエージェントが作成された実績。 | [SiliconANGLE](https://siliconangle.com/2026/05/18/multiplayer-ai-startup-dust-swipes-40m-funding-help-enterprises-move-beyond-isolated-ai-assistants/), [French Tech Journal](https://www.frenchtechjournal.com/dust-multiplayer-ai-enterprise-ai-agents/) |
-| **Ano**(ano.chat) | (B) agent-first、直接競合候補 | **"team chat with Claude Code built in"**。「チャネルごとにClaude Codeエージェントが常駐し、コマンド実行・ファイル編集・PR作成・結果のインライン投稿まで行う」構成でSlackを直接置き換える設計。ローカルファースト同期、GitHub/Linear/Stripe/HubSpot/Notion/Jira/Figma等のCLI・MCP接続、EU自社データ拠点、全社無料(ユーザーは自分のClaude Codeアカウント持参)。YC出資有無は検索範囲では確認できず**未確認**。 | [ano.chat](https://ano.chat/), [ano.chat/slack-alternative](https://ano.chat/slack-alternative) |
-| **Discord系AIボット**(Quickchat, AgentX, Poe等) | (A) 後付け型 | いずれもDiscordの既存Bot API上にAI機能を追加する形。ナレッジベース応答やモデルルーティングが中心で、エージェントがチャネルの一級参加者としてUIを生成する事例は確認できず。 | [Quickchat AI](https://quickchat.ai/post/best-ai-discord-bots) |
-| **Linzumi**(再掲) | (B) agent-first、コーディング特化 | 前章参照。 | 前章 |
+| **Slack Agentforce 2.0** | (A) Bolted-on | Summons Agentforce via @mention into existing Slack channels/DMs/threads. A resident Channel Expert agent answers using in-channel knowledge. Agent Builder has pre-built Slack actions (Create Canvas, Message Channel, etc.). | [Slack Blog](https://slack.com/blog/news/limitless-workforce-with-agentforce-in-slack), [Slack AI Agents](https://slack.com/ai-agents) |
+| **Slack Block Kit new agent components** | (A→intermediate) | Announced April 15, 2026. Added 6 types — Card/Alert/Carousel/Data Table/Work Object/Code — aiming to shift agent responses from a "wall of text" to structured UI. Card (icon, title, hero image, action buttons), Carousel (horizontal scroll up to 10 items), Data Table (renders tabular data directly, coming soon). | [Slack Dev Blog](https://slack.dev/build-richer-agent-experiences-with-block-kit/) |
+| **Claude Tag (Anthropic's new Slack integration)** | Leans (B) | Public beta released June 23, 2026. Replaces the old "Claude in Slack" app; **one persistent Claude per channel** talks with everyone (not a per-user instance). Powered by Opus 4.8. Distinctive **ambient behavior** — actively picks up information from monitored channels/tools and follows up on abandoned threads, extending from passive response to active monitoring. The old app is scheduled to be retired on August 3, 2026. | [Anthropic official](https://www.anthropic.com/news/introducing-claude-tag), [TechCrunch](https://techcrunch.com/2026/06/23/anthropics-claude-tag-is-learning-your-company-one-slack-message-at-a-time/), [VentureBeat](https://venturebeat.com/technology/anthropic-launches-claude-tag-replacing-its-slack-app-with-a-persistent-ai-teammate-that-learns-monitors-and-works-autonomously) |
+| **Microsoft Teams / Copilot Studio multi-agent** | Strongly (A), some (B)-like features | Copilot Studio's multi-agent orchestration expanded to GA in 2026. Agent-to-Agent (A2A) communication, Fabric agent integration. **Agents built with Copilot Studio can display rich interactive app experiences directly within Copilot Chat** (checking data, updating records, approvals, asset creation all completed within chat) — this is close precedent for "dynamic UI generation within a channel." | [Microsoft Copilot Blog](https://www.microsoft.com/en-us/microsoft-copilot/blog/copilot-studio/new-and-improved-multi-agent-orchestration-connected-experiences-and-faster-prompt-iteration/) |
+| **Dust** (based in Paris, backed by Sequoia/Abstract) | (B) multiplayer AI | Advocates moving from "isolated chatbots" to a "multiplayer system where humans and agents share the same information, permissions, notifications, artifacts, and goals." Raised $40M (Series B) in May 2026. Used by 3,000+ organizations, with 300,000+ agents created. | [SiliconANGLE](https://siliconangle.com/2026/05/18/multiplayer-ai-startup-dust-swipes-40m-funding-help-enterprises-move-beyond-isolated-ai-assistants/), [French Tech Journal](https://www.frenchtechjournal.com/dust-multiplayer-ai-enterprise-ai-agents/) |
+| **Ano** (ano.chat) | (B) agent-first, potential direct competitor | **"Team chat with Claude Code built in."** Designed to directly replace Slack: "a Claude Code agent resides in each channel, executing commands, editing files, creating PRs, and posting results inline." Local-first sync, CLI/MCP connections to GitHub/Linear/Stripe/HubSpot/Notion/Jira/Figma etc., EU-based data hosting, free for the whole company (users bring their own Claude Code account). Whether it has YC backing could not be confirmed within our search scope — **unconfirmed**. | [ano.chat](https://ano.chat/), [ano.chat/slack-alternative](https://ano.chat/slack-alternative) |
+| **Discord AI bots** (Quickchat, AgentX, Poe, etc.) | (A) Bolted-on | All add AI features on top of Discord's existing Bot API. Mostly knowledge-base responses and model routing; no examples found of agents acting as first-class channel participants generating UI. | [Quickchat AI](https://quickchat.ai/post/best-ai-discord-bots) |
+| **Linzumi** (recap) | (B) agent-first, coding-focused | See section above. | See above |
 
-### 2.1 分類の総括【分析】
+### 2.1 Classification summary [Analysis]
 
-- **後付け型(A)の共通パターン**: 既存チャット(Slack/Teams/Discord)のメッセージ/Bot APIの上に、エージェントを"ゲスト"として召喚する設計。UIは既存のブロック/カードコンポーネントの範囲内に制約される。
-- **agent-first型(B)の共通パターン**: エージェントが常駐し、チャネル自体の存在理由(コード実行の場、multiplayerな知識共有の場)がエージェントを前提に設計されている。ただし現状の(B)勢は「コーディングタスク特化」(Linzumi, Ano)か「エンタープライズナレッジ/権限共有特化」(Dust)のどちらかに寄っており、**「エージェントが応答としてチャネル内に汎用的な動的UI(ダッシュボード・フォーム・意思決定ツール)をその場生成する」を明確に主張しているプレイヤーは確認できなかった**。
-- 特にAnoは「Slackを置き換え、エージェントを一級参加者にする」という構想の骨格が私たちに最も近い。ただしAnoは実行対象が「コマンド実行・ファイル編集・PR」に限定されており、動的UI生成の言及はサイト上に見当たらない(未確認)。
+- **Common pattern for bolted-on type (A)**: A design where agents are summoned as "guests" on top of existing chat (Slack/Teams/Discord) message/Bot APIs. UI is constrained within existing block/card components.
+- **Common pattern for agent-first type (B)**: Agents are persistently resident, and the reason the channel exists (a venue for code execution, a venue for multiplayer knowledge sharing) is designed premised on agents. However, current (B) players lean toward either "coding-task specialized" (Linzumi, Ano) or "enterprise knowledge/permission-sharing specialized" (Dust), and **no player was found that explicitly claims "agents generate general-purpose dynamic UI (dashboards, forms, decision tools) on the fly as responses within a channel."**
+- Ano in particular has the concept skeleton closest to ours — "replace Slack, make agents first-class participants." However, Ano's execution scope is limited to "command execution, file editing, PRs," and no mention of dynamic UI generation was found on its site (unconfirmed).
 
 ---
 
-## 3. チャット内動的UI生成の先行事例
+## 3. Prior examples of dynamic UI generation within chat
 
-| 事例 | 概要 | 出典 |
+| Example | Overview | Source |
 |---|---|---|
-| **Google A2UI(Agent-to-UI)プロトコル** | 2025年12月にv0.8 public preview、2026年に**v0.9として正式オープンソース化**(bidirectional化、Python SDK追加)。エージェントが宣言的JSONでUIコンポーネント(フォーム・チャート・マップ・ダッシュボード)を記述し、クライアントがWeb/モバイル/デスクトップにネイティブレンダリングする、フレームワーク非依存の標準仕様。狙いは「壁のようなテキスト応答」問題の解消。Opal、Gemini Enterprise、Flutter GenUI SDKで採用。公式サンプル"RizzCharts"はECダッシュボードで「売上内訳を見せて」→ドーナツチャート生成、「外れ値の店舗は?」→ピン付きマップ生成、という対話駆動UI生成を実演。 | [Google Developers Blog: A2UI v0.9](https://developers.googleblog.com/a2ui-v0-9-generative-ui/), [InfoQ](https://www.infoq.com/news/2026/07/google-a2ui-genui/), [chartgen.ai](https://chartgen.ai/resources/blog/from-chatbot-to-dashboard-a2ui) |
-| **Slack Block Kitの限界と拡張** | 従来はメッセージ最大50ブロック/モーダル・Home最大100ブロックという静的レイアウト制約。2026年4月にCard/Alert/Carousel/Data Table等のエージェント向けコンポーネントを追加し「動的タスク指向UI」に近づけたが、**あくまで事前定義されたコンポーネントの組み合わせ**であり、A2UIのような汎用宣言的UI生成とは設計思想が異なる(Static Generative UIに近い)。 | [Slack Dev Blog](https://slack.dev/build-richer-agent-experiences-with-block-kit/) |
-| **OpenAI Apps SDK(ChatGPT内アプリ)** | 2025年10月6日発表。MCPベースの標準でChatGPT会話内に対話型アプリ(Spotify, Zillow, Canva, Expedia等)を埋め込み。2025年12月18日にApp Directory追加。**自然言語の応答としてUIが生成されるのではなく、事前に開発・審査されたアプリがチャット内に召喚される**モデルで、エージェントが即興でUIを組み立てる方式ではない。 | [OpenAI公式](https://openai.com/index/introducing-apps-in-chatgpt/) |
-| **Claude Artifacts / Live Artifacts** | 2026年4月に"Live Artifacts"導入。ダッシュボード/トラッカーが再訪時に最新データへ自動更新、セッション間の永続ストレージ、Artifact自身からClaude APIを直接呼べる(=Artifact内で推論が回る小さなアプリ化)。MCP経由でGoogle Calendar/Gmail/Slack等と接続可能。ただし**Artifactsは1:1のClaude.ai会話のサイドパネルという設計**であり、マルチプレイヤーなチームチャネル内で複数人が同時にレビュー・介入する体験としては設計されていない。 | [VentureBeat](https://venturebeat.com/data/anthropics-claude-code-artifacts-update-brings-live-shared-dashboards-and-interactive-workspaces-to-enterprises), [buildfastwithai](https://www.buildfastwithai.com/ai-tools/claude-artifacts) |
-| **Microsoft Copilot Studio「Copilot Chat内リッチapp体験」** | 前章参照。エージェントがCopilot Chat内にレコード確認・承認・アセット作成のためのインタラクティブ画面を直接表示。企業向けワークフロー(承認・レコード編集)に用途が寄っている。 | [Microsoft Copilot Blog](https://www.microsoft.com/en-us/microsoft-copilot/blog/copilot-studio/new-and-improved-multi-agent-orchestration-connected-experiences-and-faster-prompt-iteration/) |
+| **Google A2UI (Agent-to-UI) protocol** | Public preview v0.8 in December 2025, then **officially open-sourced as v0.9 in 2026** (made bidirectional, added Python SDK). A framework-agnostic standard specification where agents describe UI components (forms, charts, maps, dashboards) as declarative JSON, and the client natively renders them on web/mobile/desktop. Aims to resolve the "wall of text" response problem. Adopted by Opal, Gemini Enterprise, and the Flutter GenUI SDK. The official "RizzCharts" sample demonstrates conversation-driven UI generation for an e-commerce dashboard: "show me the sales breakdown" → generates a donut chart, "which stores are outliers?" → generates a pinned map. | [Google Developers Blog: A2UI v0.9](https://developers.googleblog.com/a2ui-v0-9-generative-ui/), [InfoQ](https://www.infoq.com/news/2026/07/google-a2ui-genui/), [chartgen.ai](https://chartgen.ai/resources/blog/from-chatbot-to-dashboard-a2ui) |
+| **Slack Block Kit's limits and extensions** | Traditionally constrained to static layouts (max 50 blocks per message / max 100 blocks per modal or Home tab). In April 2026, added agent-oriented components (Card/Alert/Carousel/Data Table, etc.) moving closer to "dynamic task-oriented UI," but this **remains a combination of pre-defined components**, differing in design philosophy from A2UI's general-purpose declarative UI generation (closer to Static Generative UI). | [Slack Dev Blog](https://slack.dev/build-richer-agent-experiences-with-block-kit/) |
+| **OpenAI Apps SDK (apps within ChatGPT)** | Announced October 6, 2025. An MCP-based standard for embedding interactive apps (Spotify, Zillow, Canva, Expedia, etc.) within ChatGPT conversations. App Directory added December 18, 2025. **Rather than UI being generated as a natural-language response, pre-built and reviewed apps are summoned into the chat** — a model where the agent does not improvise the UI assembly on the fly. | [OpenAI official](https://openai.com/index/introducing-apps-in-chatgpt/) |
+| **Claude Artifacts / Live Artifacts** | Introduced "Live Artifacts" in April 2026. Dashboards/trackers auto-update to the latest data on revisit, persistent storage across sessions, and Artifacts can call the Claude API directly from within themselves (i.e., the Artifact becomes a small app with reasoning running inside it). Can connect to Google Calendar/Gmail/Slack etc. via MCP. However, **Artifacts are designed as a side panel within a 1:1 Claude.ai conversation**, not designed for an experience where multiple people simultaneously review and intervene within a multiplayer team channel. | [VentureBeat](https://venturebeat.com/data/anthropics-claude-code-artifacts-update-brings-live-shared-dashboards-and-interactive-workspaces-to-enterprises), [buildfastwithai](https://www.buildfastwithai.com/ai-tools/claude-artifacts) |
+| **Microsoft Copilot Studio "rich app experience within Copilot Chat"** | See section above. Agents display interactive screens directly within Copilot Chat for record checking, approvals, and asset creation. Usage skews toward enterprise workflows (approvals, record editing). | [Microsoft Copilot Blog](https://www.microsoft.com/en-us/microsoft-copilot/blog/copilot-studio/new-and-improved-multi-agent-orchestration-connected-experiences-and-faster-prompt-iteration/) |
 
-### 3.1 「チャネル内でエージェントがダッシュボード/UIをその場生成する」に最も近い先行事例と残る余白【分析】
+### 3.1 Prior examples closest to "an agent generating a dashboard/UI on the fly within a channel," and the remaining white space [Analysis]
 
-- **技術的に最も近い**のはGoogle A2UI(宣言的・汎用的・エージェント駆動UI生成という設計思想が完全に一致)。ただしA2UIは**プロトコル/インフラ層**であり、それ自体は「マルチプレイヤーのチームチャットプロダクト」ではない。RizzCharts等のデモも1人のユーザーとエージェントの対話が前提で、**チームメンバー複数人が同じチャネルで同じ生成UIを見ながら共同編集・承認するマルチプレイヤー性**は実証されていない。
-- **プロダクトとして最も近い**のはMicrosoft Copilot Studio(Copilot Chat内リッチapp)だが、企業ワークフロー(承認・レコード編集)向けの定型UIに寄っており、汎用的・即興的な生成(「今すぐこのデータをグラフにして」に応じてゼロから組み立てる)という主張は弱い。
-- **残る余白**: (1) A2UI的な汎用生成UIを (2) Slack/Teams的なマルチプレイヤー・チャネル構造の中で (3) エージェントが一級参加者として、かつ (4) 生成されたUI自体が会話の履歴・ナレッジとして永続化される――この4点をすべて満たすプロダクトは調査範囲内で見当たらなかった。特に「複数人が同時に見ている生成UI上でリアルタイムに共同編集・承認する」体験は、どの先行事例にも明示的な言及がない。
-
----
-
-## 4. 総括
-
-### 4.1 新規性が立つポイント(3行)
-
-1. **汎用generative UIをマルチプレイヤー・チャネル構造の中に統合する**組み合わせは、A2UI(汎用UI生成だが1:1・インフラ層止まり)ともSlack/Teams(マルチプレイヤーだが定型ブロックUI止まり)とも異なる交点であり、既存プレイヤーが同時に満たしていない。
-2. **エージェントをチャネルの「1メンバー」として扱い、その応答が即座にアプリ的UIとして永続化・共有される**設計は、Linzumi/Anoの「コーディングタスク実行者」やAgentforce/Claude Tagの「質問応答役」とは異なる役割規定であり、対象業務をエンジニアリングに限定しない全社的な「知識の起点」という主張につながる。
-3. 生成UI自体が会話ログとして蓄積され、後から検索・再利用できる形で「チャットが会社のナレッジベースそのものになる」という主張は、Dust(multiplayer AIだが生成UIではなくテキスト/エージェント権限共有が主眼)ともLinzumi(決定ログはコーディング文脈限定)とも異なる射程を持つ。
-
-### 4.2 ピッチで突っ込まれそうな「それはXと何が違うの?」トップ3と返し方
-
-1. **「それはLinzumiと何が違うの?(審査員の会社では?)」**
-   返し: 「Linzumiはコーディングエージェントのfleetを統制する開発基盤で、対象はエンジニアリングチームのdiff/テスト/PRです。私たちは全社員(非エンジニアを含む)が使う組織のインターフェースそのものを再発明していて、エージェントの応答はコード変更に限らずダッシュボードや意思決定ツールとして即座に生成されます。Linzumiの延長線ではなく、隣接するが別レイヤーの課題を狙っています。」
-
-2. **「それはSlack Agentforce / Claude Tag / Copilot Studioと何が違うの?(大手がもう出している)」**
-   返し: 「大手勢は既存チャットにエージェントを"ゲスト"として後付けする設計(@mentionで呼ぶ、固定ブロックUIで返す)です。私たちはエージェントをアーキテクチャの前提=一級参加者として設計し直しているので、応答が固定コンポーネントの組み合わせではなく、その場のタスクに合わせて自由に生成されるUIになります。既存製品への「プラグイン」ではなく、チャット自体の設計思想が違います。」
-
-3. **「それはGoogle A2UIやClaude Artifactsで十分実現できるのでは?」**
-   返し: 「A2UIは優れた生成UIプロトコルですが、あくまで1人のユーザーとエージェントの対話を前提にしたインフラ層で、マルチプレイヤーのチームチャットではありません。Claude Artifactsも1:1会話のサイドパネルです。私たちはそれらの技術思想を、チームが同時に見て・共同編集し・意思決定する共有チャネルという文脈に持ち込む統合レイヤーを作っています。」
-
-### 4.3 特筆すべき未確認事項
-
-- Ano.chatのYC出資有無、および動的UI生成機能の有無は公開情報から確認できず(未確認)。
-- Linzumiが今後コーディング以外の業務領域へ展開する計画があるかは非公開(未確認)。
-- 「Convictional」(YC W2019、"company brain that replaces Slack")はYC企業ディレクトリの説明文にのみ言及があり、現在の実態(AI agent対応の有無)は確認できていない(未確認)。
+- **Technically closest** is Google A2UI (its design philosophy — declarative, general-purpose, agent-driven UI generation — fully matches). However, A2UI is a **protocol/infrastructure layer**, not itself a "multiplayer team chat product." Demos like RizzCharts also assume a single user conversing with an agent, and **the multiplayer property of multiple team members viewing and jointly editing/approving the same generated UI in the same channel has not been demonstrated**.
+- **As a product, the closest** is Microsoft Copilot Studio (rich apps within Copilot Chat), but it skews toward fixed UI for enterprise workflows (approvals, record editing), and the claim of general-purpose, improvisational generation ("turn this data into a graph right now," assembled from scratch) is weak.
+- **Remaining white space**: A product that satisfies all four of the following was not found within our research scope: (1) A2UI-like general-purpose generative UI, (2) within a Slack/Teams-like multiplayer channel structure, (3) with agents as first-class participants, and (4) where the generated UI itself is persisted as conversation history/knowledge. In particular, the experience of "multiple people simultaneously viewing a generated UI and jointly editing/approving it in real time" is not explicitly mentioned in any prior example.
 
 ---
 
-## 出典一覧
+## 4. Summary
+
+### 4.1 Where the novelty stands (3 lines)
+
+1. **The combination of integrating general-purpose generative UI into a multiplayer channel structure** is an intersection that neither A2UI (general-purpose UI generation, but 1:1 and stuck at the infrastructure layer) nor Slack/Teams (multiplayer, but stuck at fixed block UI) satisfies simultaneously — no existing player satisfies both at once.
+2. **The design of treating the agent as "a member" of the channel, whose responses are immediately persisted and shared as app-like UI** is a different role definition from Linzumi/Ano's "coding task executor" or Agentforce/Claude Tag's "Q&A role," and leads to a claim of being the "origin of knowledge" company-wide, not limited to engineering.
+3. The claim that generated UI itself accumulates as conversation logs, searchable and reusable later, such that "chat itself becomes the company's knowledge base," has a different scope from both Dust (multiplayer AI, but centered on text/agent permission-sharing rather than generated UI) and Linzumi (decision logs limited to a coding context).
+
+### 4.2 Top 3 "how is that different from X?" questions expected at the pitch, and how to respond
+
+1. **"How is that different from Linzumi? (Isn't that the judge's own company?)"**
+   Response: "Linzumi is a development platform that governs a fleet of coding agents, targeting engineering teams' diffs/tests/PRs. We're reinventing the organization's interface itself for the whole company, including non-engineers, where agent responses are generated instantly as dashboards or decision tools, not limited to code changes. We're not extending Linzumi — we're targeting an adjacent but different layer of the problem."
+
+2. **"How is that different from Slack Agentforce / Claude Tag / Copilot Studio? (Big players have already shipped this.)"**
+   Response: "The big players' design bolts agents onto existing chat as 'guests' (summoned via @mention, responding with fixed block UI). We've redesigned the agent as an architectural premise — a first-class participant — so responses aren't a combination of fixed components but UI freely generated to fit the task at hand. It's not a 'plugin' to an existing product; the design philosophy of chat itself is different."
+
+3. **"Couldn't that be sufficiently achieved with Google A2UI or Claude Artifacts?"**
+   Response: "A2UI is an excellent generative UI protocol, but it's an infrastructure layer premised on a single user conversing with an agent, not a multiplayer team chat. Claude Artifacts is also a side panel for a 1:1 conversation. We're building an integration layer that brings those technical ideas into the context of a shared channel where a team simultaneously views, jointly edits, and makes decisions together."
+
+### 4.3 Notable unconfirmed items
+
+- Whether Ano.chat has YC backing, and whether it has dynamic UI generation features, could not be confirmed from public information (unconfirmed).
+- Whether Linzumi has plans to expand into non-coding business areas is not public (unconfirmed).
+- "Convictional" (YC W2019, "company brain that replaces Slack") is mentioned only in the YC company directory description; its current state (whether it supports AI agents) could not be confirmed (unconfirmed).
+
+---
+
+## Source list
 
 - [Y Combinator: Linzumi](https://www.ycombinator.com/companies/linzumi)
-- [Y Combinator on X (ローンチ告知)](https://x.com/ycombinator/status/2069465556433211583)
-- [Digg: Sean Grove / Linzumi報道まとめ](https://digg.com/tech/bnuy2maq)
+- [Y Combinator on X (launch announcement)](https://x.com/ycombinator/status/2069465556433211583)
+- [Digg: Sean Grove / Linzumi coverage roundup](https://digg.com/tech/bnuy2maq)
 - [linzumi.com](https://linzumi.com/)
 - [Slack: Agentforce 2.0 in Slack](https://slack.com/blog/news/limitless-workforce-with-agentforce-in-slack)
 - [Slack AI Agents](https://slack.com/ai-agents)
-- [Slack Dev Blog: Block Kitエージェント向け新コンポーネント](https://slack.dev/build-richer-agent-experiences-with-block-kit/)
-- [Anthropic: Claude Tag発表](https://www.anthropic.com/news/introducing-claude-tag)
-- [TechCrunch: Claude Tag報道](https://techcrunch.com/2026/06/23/anthropics-claude-tag-is-learning-your-company-one-slack-message-at-a-time/)
-- [VentureBeat: Claude Tag報道](https://venturebeat.com/technology/anthropic-launches-claude-tag-replacing-its-slack-app-with-a-persistent-ai-teammate-that-learns-monitors-and-works-autonomously)
-- [Microsoft Copilot Blog: マルチエージェントオーケストレーション](https://www.microsoft.com/en-us/microsoft-copilot/blog/copilot-studio/new-and-improved-multi-agent-orchestration-connected-experiences-and-faster-prompt-iteration/)
-- [SiliconANGLE: Dust $40M調達](https://siliconangle.com/2026/05/18/multiplayer-ai-startup-dust-swipes-40m-funding-help-enterprises-move-beyond-isolated-ai-assistants/)
+- [Slack Dev Blog: new Block Kit components for agents](https://slack.dev/build-richer-agent-experiences-with-block-kit/)
+- [Anthropic: Claude Tag announcement](https://www.anthropic.com/news/introducing-claude-tag)
+- [TechCrunch: Claude Tag coverage](https://techcrunch.com/2026/06/23/anthropics-claude-tag-is-learning-your-company-one-slack-message-at-a-time/)
+- [VentureBeat: Claude Tag coverage](https://venturebeat.com/technology/anthropic-launches-claude-tag-replacing-its-slack-app-with-a-persistent-ai-teammate-that-learns-monitors-and-works-autonomously)
+- [Microsoft Copilot Blog: multi-agent orchestration](https://www.microsoft.com/en-us/microsoft-copilot/blog/copilot-studio/new-and-improved-multi-agent-orchestration-connected-experiences-and-faster-prompt-iteration/)
+- [SiliconANGLE: Dust raises $40M](https://siliconangle.com/2026/05/18/multiplayer-ai-startup-dust-swipes-40m-funding-help-enterprises-move-beyond-isolated-ai-assistants/)
 - [French Tech Journal: Dust multiplayer AI](https://www.frenchtechjournal.com/dust-multiplayer-ai-enterprise-ai-agents/)
 - [ano.chat](https://ano.chat/)
 - [ano.chat/slack-alternative](https://ano.chat/slack-alternative)
-- [Quickchat AI: Discord AI Bot一覧](https://quickchat.ai/post/best-ai-discord-bots)
+- [Quickchat AI: Discord AI bot roundup](https://quickchat.ai/post/best-ai-discord-bots)
 - [Google Developers Blog: A2UI v0.9](https://developers.googleblog.com/a2ui-v0-9-generative-ui/)
 - [InfoQ: Google A2UI GenUI](https://www.infoq.com/news/2026/07/google-a2ui-genui/)
-- [chartgen.ai: A2UI RizzCharts事例](https://chartgen.ai/resources/blog/from-chatbot-to-dashboard-a2ui)
+- [chartgen.ai: A2UI RizzCharts case study](https://chartgen.ai/resources/blog/from-chatbot-to-dashboard-a2ui)
 - [OpenAI: Introducing apps in ChatGPT](https://openai.com/index/introducing-apps-in-chatgpt/)
 - [VentureBeat: Claude Live Artifacts](https://venturebeat.com/data/anthropics-claude-code-artifacts-update-brings-live-shared-dashboards-and-interactive-workspaces-to-enterprises)
-- [buildfastwithai: Claude Artifacts 2026レビュー](https://www.buildfastwithai.com/ai-tools/claude-artifacts)
+- [buildfastwithai: Claude Artifacts 2026 review](https://www.buildfastwithai.com/ai-tools/claude-artifacts)

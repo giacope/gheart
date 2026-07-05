@@ -1,85 +1,85 @@
-# FDE / Forward Deployed Agents 市場・競合地図 — deep-research レポート
+# FDE / Forward Deployed Agents Market & Competitive Landscape — deep-research Report
 
-作成日: 2026-07-05 / 対象: c0mpiled ハッカソン(5時間開発・90秒デモ審査)
-手法: deep-research harness(6検索角度 → 22ソース取得 → 106主張抽出 → 25主張を3票敵対的検証 → 24確認/1反証)
+Created: 2026-07-05 / Target: c0mpiled Hackathon (5-hour build, 90-second demo judging)
+Method: deep-research harness (6 search angles → 22 sources retrieved → 106 claims extracted → 25 claims put through 3-vote adversarial verification → 24 confirmed / 1 refuted)
 
-> **凡例**: 「事実」= 一次/高品質二次ソースで検証済み(3-0確認)。「分析」= 本レポートの戦略推論(未検証)。
-
----
-
-## 0. 一行結論(最重要)
-
-今朝の会議で収束した本命=**「会議/音声 → 構造化・再利用可能な知識 → proactive エージェント」は、すでに YC の CEO 本人(Garry Tan の GBrain)+ YC S26 の Hyper + Otter/MCP に占拠されている**。汎用の「meeting→knowledge」で出すと、審査員に derivative(二番煎じ)に見える構造的リスクがある。**勝ち筋は縦(construction/建築ドメイン)に切ること**——Tektome(Giacomo)の建築AI知見を moat にした、ドメイン特化のトピック分割 + tacit knowledge 吸い上げ + ドメインイベント駆動の proactivity。
+> **Legend**: "Fact" = verified via primary/high-quality secondary sources (3-0 confirmed). "Analysis" = strategic reasoning in this report (unverified).
 
 ---
 
-## 1. FDE の実態と痛み(事実)
+## 0. One-line Conclusion (Most Important)
 
-- **起源**: FDE は Palantir 発祥(2010年代初頭、社内名「Delta」)。Dev=「1機能を多顧客へ」(製品中心の深さ)に対し、Delta=「1顧客に多機能を」(顧客中心の広さ)。既存プラットフォーム(Gotham/Foundry)を単一顧客向けに構成する。~2016年まで Palantir は通常SWEより FDE の方が多かった。
-  - 出典: [Palantir blog(A Day in the Life)](https://blog.palantir.com/a-day-in-the-life-of-a-palantir-forward-deployed-software-engineer-45ef2de257b1), [Pragmatic Engineer](https://newsletter.pragmaticengineer.com/p/forward-deployed-engineers)
-- **日々の仕事の核心 = 組織固有の文脈の吸い上げと実装化**。FDE は「その領域を最もよく知る現場ユーザー」から直接ドメイン知識を学び、顧客と手を取り合って高速反復する。3次元で動く: ①現場に埋め込まれ共同開発 ②機能を本体プロダクト/ロードマップにフィードバック ③営業と組んで受注・活性化。
-- **AI時代のスタートアップが FDE を採用・改名**: Sierra は意図的に「agent engineer」と命名(システム統合 + エージェント開発 + 顧客業務理解の合成)。Sierra の Head of Agent Engineering は Palantir 出身(約5年)。Sierra の仕事の記述=「顧客システムを低遅延の音声/チャットエージェントと統合し、**顧客が自社の内部知識と文脈を適用できるよう支援する**」——これはまさに本チームが狙う「tacit context 吸い上げ」の痛みそのもの。
-  - 出典: [Latent Space](https://www.latent.space/p/forward-deployed-engineers-aiewf), Sierra blog
+The frontrunner idea that converged in this morning's meeting — **"meetings/voice → structured, reusable knowledge → proactive agent" — is already occupied by YC's own CEO (Garry Tan's GBrain) + YC S26's Hyper + Otter/MCP**. Shipping a generic "meeting→knowledge" product carries the structural risk of looking derivative to the judges. **The winning move is to cut vertically (into the construction/architecture domain)** — using Tektome's (Giacomo's) architectural AI expertise as a moat, combined with domain-specific topic segmentation + tacit knowledge capture + domain-event-driven proactivity.
 
-## 2. Forward Deployed Agents(FDA)= 概念ではなく既に出荷済み(事実)
+---
 
-- **Palantir「AI FDE」**が本番稼働(early 2026 GA、AIP対応enrollment向け)。「the AI-powered forward deployed engineer」=会話コマンドで Foundry を操作する対話エージェント。**単に質問に答えるのではなく、ontology を構築・保守し、コードリポジトリを管理し、データパイプラインを改変する**=人間FDEの役割そのものをエージェント製品化。
-  - 出典: [Palantir docs — AI FDE overview](https://www.palantir.com/docs/foundry/ai-fde/overview), [modes-and-skills](https://www.palantir.com/docs/foundry/ai-fde/modes-and-skills)
-- **「FDA」という語の初出エッセイ**は Superagentic AI(Shashi Jagtap, 2025-10)——「人間の代わりにエージェントをクライアント環境に deploy、契約は価値実証の後」。※これはブログ品質ソース。
+## 1. The Reality and Pain Points of FDE (Fact)
 
-## 3. 投資・市場トレンド — FDE/FDA は2026年トップティアの賭け(事実)
+- **Origin**: FDE originated at Palantir (early 2010s, internal name "Delta"). Dev = "one feature to many customers" (product-centric depth), whereas Delta = "many features to one customer" (customer-centric breadth). They configure the existing platforms (Gotham/Foundry) for a single customer. Until ~2016, Palantir had more FDEs than regular SWEs.
+  - Source: [Palantir blog (A Day in the Life)](https://blog.palantir.com/a-day-in-the-life-of-a-palantir-forward-deployed-software-engineer-45ef2de257b1), [Pragmatic Engineer](https://newsletter.pragmaticengineer.com/p/forward-deployed-engineers)
+- **The core of the daily work = absorbing and implementing organization-specific context**. FDEs learn domain knowledge directly from "the frontline users who know the domain best," and iterate rapidly hand-in-hand with the customer. They operate along three dimensions: (1) embedded on-site co-development, (2) feeding features back into the core product/roadmap, (3) partnering with sales to win and activate accounts.
+- **AI-era startups have adopted and renamed FDE**: Sierra deliberately coined the title "agent engineer" (a synthesis of systems integration + agent development + understanding of customer operations). Sierra's Head of Agent Engineering came from Palantir (~5 years). Sierra describes the role as "integrating customer systems with low-latency voice/chat agents, and **helping customers apply their own internal knowledge and context**" — this is precisely the "tacit context capture" pain point this team is targeting.
+  - Source: [Latent Space](https://www.latent.space/p/forward-deployed-engineers-aiewf), Sierra blog
 
-- **AWS が $1B の社内 FDE 組織を新設(2026-06-30)**。VP Francessca Vasquez、初期顧客に Cox/NBA/NFL/Southwest。※研究時点でわずか5日前のニュース。
-- 先行して **OpenAI が ~$4B の FDE ジョイントベンチャー**(Tomoro=約150人のFDE企業の買収計画含む)、**Anthropic が $1.5B の FDE JV**。いずれも PE と組成(TPG/Advent/Bain/Brookfield; Blackstone/H&F/Goldman)。
-  - ※nuance: OpenAI の $4B は「調達資本」であって valuation ではない(valuation は ~$10B 報道)。
-  - 出典: [TechCrunch](https://techcrunch.com/2026/06/30/amazon-launches-new-1-billion-fde-org-following-openai-and-anthropic/), Amazon newsroom, CNBC, Bloomberg
-- **含意(分析)**: 三大プラットフォーム全社が2026年に FDE 組織を立てた=「モデルではなくデプロイ/文脈がボトルネック」という認識が業界コンセンサス化。ハッカソンのテーマ選択として時流に完全に乗っている。
+## 2. Forward Deployed Agents (FDA) = Not a Concept — Already Shipped (Fact)
 
-## 4. YC RFS が本チームの thesis を canonical 化(事実)
+- **Palantir's "AI FDE"** is in production (early 2026 GA, for AIP-enabled enrollment). "The AI-powered forward deployed engineer" = a conversational agent that operates Foundry via conversational commands. **Rather than merely answering questions, it builds and maintains the ontology, manages code repositories, and modifies data pipelines** — turning the human FDE role itself into an agent product.
+  - Source: [Palantir docs — AI FDE overview](https://www.palantir.com/docs/foundry/ai-fde/overview), [modes-and-skills](https://www.palantir.com/docs/foundry/ai-fde/modes-and-skills)
+- **The essay that first coined the term "FDA"** is from Superagentic AI (Shashi Jagtap, 2025-10) — "deploy agents into the client's environment instead of humans; the contract comes after value is proven." *Note: this is a blog-quality source.*
 
-- **Company Brain(Blomfield)**: 「AI自動化のボトルネックはもはやモデルではない。今やドメイン知識だ」。散在する非構造ソース(メール/Slack/チケット/DB/人の頭)から知識を抽出→**AIが実行できる skills file** に変換=「生データと信頼できるAI自動化の間の欠けた層」。**明示的に「検索でもチャットボットでもない」**。
-- **Dynamic Software Interfaces(Gupta)**: 企業ソフトは顧客ごとに FDE がカスタマイズしてきた。「コーディングエージェントが十分良くなり、ユーザーが**自分自身の FDE** になれる」。
-  - 出典: [YC RFS](https://www.ycombinator.com/rfs)(一次・verbatim)
+## 3. Investment & Market Trends — FDE/FDA Is a Top-tier Bet for 2026 (Fact)
 
-## 5. ⚠️ 競合 — 本命 whitespace は既に埋まっている(事実)
+- **AWS launched a new $1B internal FDE organization (2026-06-30)**. VP Francessca Vasquez; initial customers include Cox/NBA/NFL/Southwest. *Note: this news was only 5 days old at the time of research.*
+- Preceding this, **OpenAI formed a ~$4B FDE joint venture** (including a planned acquisition of Tomoro, an FDE firm of ~150 people), and **Anthropic formed a $1.5B FDE JV**. Both were structured with PE firms (TPG/Advent/Bain/Brookfield; Blackstone/H&F/Goldman).
+  - *Nuance: OpenAI's $4B is "capital raised," not a valuation (the reported valuation is ~$10B).*
+  - Source: [TechCrunch](https://techcrunch.com/2026/06/30/amazon-launches-new-1-billion-fde-org-following-openai-and-anthropic/), Amazon newsroom, CNBC, Bloomberg
+- **Implication (Analysis)**: All three major platforms stood up FDE organizations in 2026 = the recognition that "the bottleneck is deployment/context, not the model" has become industry consensus. This makes the hackathon theme choice perfectly aligned with the current wave.
 
-| プレイヤー | 何をやっているか | 脅威度 |
+## 4. YC's RFS Canonizes This Team's Thesis (Fact)
+
+- **Company Brain (Blomfield)**: "The bottleneck for AI automation is no longer the model. It's domain knowledge now." Extract knowledge from scattered unstructured sources (email/Slack/tickets/DBs/people's heads) → convert into **skills files that AI can execute** = "the missing layer between raw data and trustworthy AI automation." **Explicitly "neither search nor a chatbot."**
+- **Dynamic Software Interfaces (Gupta)**: Enterprise software has historically been customized per customer by FDEs. "Coding agents have gotten good enough that users can become **their own FDE**."
+  - Source: [YC RFS](https://www.ycombinator.com/rfs) (primary, verbatim)
+
+## 5. ⚠️ Competition — the Prime Whitespace Is Already Filled (Fact)
+
+| Player | What They Do | Threat Level |
 |---|---|---|
-| **GBrain**(Garry Tan=YC CEO本人) | 会議/メール/音声通話を **self-wiring knowledge graph**(typed edges, zero-LLM抽出)に取り込み、raw chunk でなく「答え」(合成・引用付き散文)を返す。**24/7 の proactive cron** で dedup/引用修正/統合(66 crons・~146k pages)。OSS。 | **最高**。本チームの差別化3点(音声→構造化 / トピック分割 / proactive)を全て既に出荷。しかも審査エコシステムの最高権威が作者。 |
-| **Hyper**(YC Spring/S26 2026) | 「AI社員を動かす company brain」。documents/カレンダー/メール/Slack/GitHub PR から**手入力ゼロで**自動吸い上げ→自己保守型 knowledge graph(SPO triples, valid_from/until, 履歴の遡及インデックス)。 | 高。auto-capture whitespace を正面から。研究時点で~12日齢。 |
-| **Otter** | 文字起こしを「workflow を動かす検索可能な知識」と位置づけ。AI Chat が会議+連携アプリ(Gmail/Drive/Notion/Jira/Salesforce)横断検索。**MCP Server で ChatGPT/Claude に会議知識を直結**。 | 中。ただし live query/RAG 層であり、curated なトピック分割再利用KBではない=そこは隙。 |
+| **GBrain** (Garry Tan — YC's CEO himself) | Ingests meetings/email/voice calls into a **self-wiring knowledge graph** (typed edges, zero-LLM extraction), and returns "answers" (synthesized, cited prose) rather than raw chunks. Runs **24/7 proactive crons** for dedup/citation-fixing/consolidation (66 crons, ~146k pages). Open source. | **Highest**. Already ships all three of this team's differentiators (voice→structured / topic segmentation / proactive). Moreover, the author is the highest authority in the judging ecosystem. |
+| **Hyper** (YC Spring/S26 2026) | "A company brain that runs AI employees." Automatically absorbs from documents/calendar/email/Slack/GitHub PRs with **zero manual input** → self-maintaining knowledge graph (SPO triples, valid_from/until, retroactive history indexing). | High. Attacks the auto-capture whitespace head-on. ~12 days old at the time of research. |
+| **Otter** | Positions transcription as "searchable knowledge that drives workflows." AI Chat searches across meetings + connected apps (Gmail/Drive/Notion/Jira/Salesforce). **MCP Server connects meeting knowledge directly into ChatGPT/Claude.** | Medium. However, it's a live query/RAG layer, not a curated, topic-segmented reusable KB — that's the gap. |
 
-- ※反証(0-3で棄却): Remi8 の「topic/project/context で自動分類」主張は検証で否定=**多くの文字起こしツールは実は真のトピック分割をしていない**。横方向の隙は残るが、GBrain/Hyper が横方向版を塞いでいる。
-
----
-
-## 6. 空白地帯と勝ち筋(分析 / confidence: medium)
-
-汎用「meeting→company knowledge」は混雑(GBrain/Hyper/Otter、資金潤沢なインサイダー主導)。**5時間デモで防御可能な wedge は縦(vertical)**——本チームの建築/建設ドメイン(契約、価格前例、認証、専門家の暗黙知)。moat は「汎用RAG」ではなく「ドメイン特化のトピック分割 + tacit-expert capture」。
-
-**RFSテーマ別の切り口マッピング**:
-1. **ドメインスキーマ駆動のトピック分割**(建設 ontology: 入札 / 変更指示 / 認証 / 前例価格 を汎用エンティティグラフでなく構造化)→ **Company Brain** に最適合。
-2. **そのドメイン知識に対し能動的に動くエージェント**(例: 新規入札が来たら過去の価格前例を自動でフラグ)→ **Software for Agents**。GBrain の cron 型 proactivity より**イベント/トリガー駆動のドメイン proactivity** の方が鋭く demo 映えする。
-3. **契約/プロジェクトごとに自己再構成するドメインUI** → **Dynamic Software Interfaces**。
-
-### 差別化を legible にする論点(会議の「proactive」を尖らせる)
-- GBrain の proactive = スケジュール型バックグラウンド enrichment(cron)。
-- 本チームが勝つ proactive = **ビジネスイベント発火型**(「特定の業務イベントが起きた瞬間にエージェントが動く」)。90秒で「入札到着 → 過去契約から価格前例を自動提示」の before/after を見せる方が圧倒的に鋭い。
+- *Refuted (rejected 0-3): Remi8's claim of "automatic classification by topic/project/context" was disproven during verification — **many transcription tools do not actually perform true topic segmentation**. A horizontal gap remains, but GBrain/Hyper have already blocked the horizontal version.*
 
 ---
 
-## 7. 未解決の問い(次に潰すと勝率が上がる)
+## 6. Whitespace and the Winning Angle (Analysis / confidence: medium)
 
-1. GBrain/Hyper は真の**ドメインスキーマ駆動**トピック分割(建設ontology)を持つか、汎用グラフだけか? 汎用だけなら縦の wedge は本物。
-2. GBrain/Hyper の「音声」は**生オーディオを処理**するのか、文字起こし済みテキストを page として取り込むだけか? 「生の会議音声→構造化ドメイン知識」をワンステップは未開拓かもしれない。
-3. cron型 proactivity vs イベント/トリガー駆動 proactivity の差を demo でどう見せるか。
-4. Tektome の既存の契約/価格/認証コーパスと顧客関係は、横断的 company brain が複製できない**データ/関係の moat** になるか。90秒でその moat を審査員に伝えられるか。
+The generic "meeting→company knowledge" space is crowded (GBrain/Hyper/Otter, driven by well-funded insiders). **The defensible wedge for a 5-hour demo is vertical** — this team's construction/architecture domain (contracts, price precedents, certifications, experts' tacit knowledge). The moat is not "generic RAG" but "domain-specific topic segmentation + tacit-expert capture."
+
+**Angle mapping by RFS theme**:
+1. **Domain-schema-driven topic segmentation** (construction ontology: structuring bids / change orders / certifications / price precedents rather than a generic entity graph) → best fits **Company Brain**.
+2. **An agent that acts proactively on that domain knowledge** (e.g., automatically flagging past price precedents when a new bid comes in) → **Software for Agents**. **Event/trigger-driven domain proactivity** demos sharper than GBrain's cron-style proactivity.
+3. **A domain UI that reconfigures itself per contract/project** → **Dynamic Software Interfaces**.
+
+### Making the Differentiation Legible (Sharpening the Meeting's "proactive" Idea)
+- GBrain's proactive = schedule-based background enrichment (cron).
+- The proactive that lets this team win = **business-event-triggered** ("the agent acts the instant a specific business event occurs"). Showing a before/after of "bid arrives → price precedents from past contracts surfaced automatically" in 90 seconds is far sharper.
 
 ---
 
-## 8. caveats(重要)
+## 7. Open Questions (Resolving These Next Raises the Win Rate)
 
-- 時間感度が高い: AWS $1B FDE org は5日前、GBrain(~2026-04 OSS化)と Hyper(~12日齢)は高速で動いており競合図は数週間で変わりうる。
-- ベンダー製品の能力主張(Palantir AI FDE / Hyper / GBrain / Otter)は**謳われた/意図された能力**であり独立ベンチマークではない。「何をするか」は信頼できるが「どれだけうまく動くか」は未検証。
-- **最重要の戦略 caveat**: 本チームの当初 whitespace は GBrain(Garry Tan 作)と大きく重複。汎用版は差別化されず YC 近縁の審査員に derivative に見えうる。差別化は**縦(建設)の深さ**から来なければならない。
-- MEMORY のフラグ: GStack/GBrain は CLAUDE.md 汚染リスクあり。ツールとして採用するなら慎重に。
+1. Do GBrain/Hyper have true **domain-schema-driven** topic segmentation (a construction ontology), or only a generic graph? If only generic, the vertical wedge is real.
+2. Does GBrain/Hyper's "voice" **process raw audio**, or does it merely ingest already-transcribed text as pages? A single-step "raw meeting audio → structured domain knowledge" pipeline may be unexplored territory.
+3. How to demonstrate the difference between cron-style proactivity and event/trigger-driven proactivity in the demo.
+4. Can Tektome's existing corpus of contracts/pricing/certifications and its customer relationships form a **data/relationship moat** that a horizontal company brain cannot replicate? Can that moat be conveyed to the judges in 90 seconds?
+
+---
+
+## 8. Caveats (Important)
+
+- Highly time-sensitive: the AWS $1B FDE org is 5 days old, and GBrain (open-sourced ~2026-04) and Hyper (~12 days old) are moving fast — the competitive landscape could change within weeks.
+- Vendor product capability claims (Palantir AI FDE / Hyper / GBrain / Otter) are **stated/intended capabilities**, not independent benchmarks. "What it does" is credible, but "how well it works" is unverified.
+- **Most important strategic caveat**: this team's original whitespace overlaps heavily with GBrain (built by Garry Tan). A generic version isn't differentiated and could look derivative to judges close to YC. The differentiation must come from **depth in the vertical (construction)**.
+- MEMORY flag: GStack/GBrain carries a risk of CLAUDE.md contamination. If adopted as a tool, proceed carefully.
