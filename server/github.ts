@@ -1,4 +1,4 @@
-import type { CiState, FileStat, PRProfile, SwipeVerdict } from '../shared/types';
+import type { AuthUser, CiState, FileStat, PRProfile, RepoInfo, SwipeVerdict } from '../shared/types';
 import { extractMedia } from './media';
 import { matchScore, summarize } from './summarize';
 
@@ -18,6 +18,47 @@ async function gh<T>(path: string, token: string): Promise<T> {
     throw new Error(`GitHub ${res.status} on ${path}: ${body.slice(0, 200)}`);
   }
   return res.json() as Promise<T>;
+}
+
+interface RawViewer {
+  id: number;
+  login: string;
+  name: string | null;
+  avatar_url: string;
+}
+
+export async function fetchViewer(token: string): Promise<AuthUser> {
+  const raw = await gh<RawViewer>('/user', token);
+  return { id: raw.id, login: raw.login, name: raw.name, avatarUrl: raw.avatar_url };
+}
+
+interface RawRepo {
+  full_name: string;
+  private: boolean;
+  description: string | null;
+  pushed_at: string;
+  stargazers_count: number;
+  language: string | null;
+  open_issues_count: number;
+  archived: boolean;
+}
+
+export async function fetchUserRepos(token: string): Promise<RepoInfo[]> {
+  const raw = await gh<RawRepo[]>(
+    '/user/repos?sort=pushed&per_page=100&affiliation=owner,collaborator,organization_member',
+    token,
+  );
+  return raw
+    .filter((r) => !r.archived)
+    .map((r) => ({
+      fullName: r.full_name,
+      private: r.private,
+      description: r.description,
+      pushedAt: r.pushed_at,
+      stars: r.stargazers_count,
+      language: r.language,
+      openIssues: r.open_issues_count,
+    }));
 }
 
 interface RawPR {

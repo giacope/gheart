@@ -53,6 +53,43 @@ export interface PRProfile {
 
 export type SwipeVerdict = 'approve' | 'reject' | 'skip';
 
+/** How the server is authenticating against GitHub. */
+export type AuthMode = 'oauth' | 'token' | 'demo';
+
+export interface AuthUser {
+  /** GitHub user id (0 for the synthetic demo user). */
+  id: number;
+  login: string;
+  name: string | null;
+  avatarUrl: string;
+}
+
+export interface SessionInfo {
+  mode: AuthMode;
+  /** Null only in oauth mode before the user signs in. */
+  user: AuthUser | null;
+}
+
+export interface RepoInfo {
+  fullName: string; // "owner/name"
+  private: boolean;
+  description: string | null;
+  pushedAt: string; // ISO date
+  stars: number;
+  language: string | null;
+  /** Open issues + PRs — GitHub's cheap proxy for activity. */
+  openIssues: number;
+}
+
+export interface RepoListResponse {
+  repos: RepoInfo[];
+}
+
+export interface UndoRequest {
+  repo: string;
+  number: number;
+}
+
 export interface ReviewRequest {
   repo: string;
   number: number;

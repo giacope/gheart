@@ -1,24 +1,50 @@
-import type { PRListResponse, ReviewRequest, ReviewResponse } from '../shared/types';
+import type {
+  PRListResponse,
+  RepoListResponse,
+  ReviewRequest,
+  ReviewResponse,
+  SessionInfo,
+  UndoRequest,
+} from '../shared/types';
 
-export async function fetchPRs(repo?: string): Promise<PRListResponse> {
-  const qs = repo ? `?repo=${encodeURIComponent(repo)}` : '';
-  const res = await fetch(`/api/prs${qs}`);
+async function request<T>(url: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(url, init);
   if (!res.ok) {
     const body = (await res.json().catch(() => null)) as { error?: string } | null;
-    throw new Error(body?.error || `Failed to load PRs (${res.status})`);
+    throw new Error(body?.error || `Request failed (${res.status})`);
   }
-  return res.json();
+  return res.json() as Promise<T>;
 }
 
-export async function sendReview(req: ReviewRequest): Promise<ReviewResponse> {
-  const res = await fetch('/api/review', {
+function post<T>(url: string, body: unknown): Promise<T> {
+  return request<T>(url, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(req),
+    body: JSON.stringify(body),
   });
-  if (!res.ok) {
-    const body = (await res.json().catch(() => null)) as { error?: string } | null;
-    throw new Error(body?.error || `Review failed (${res.status})`);
-  }
-  return res.json();
+}
+
+export function fetchSession(): Promise<SessionInfo> {
+  return request<SessionInfo>('/api/auth/me');
+}
+
+export function logout(): Promise<{ ok: boolean }> {
+  return post<{ ok: boolean }>('/api/auth/logout', {});
+}
+
+export function fetchRepos(): Promise<RepoListResponse> {
+  return request<RepoListResponse>('/api/repos');
+}
+
+export function fetchPRs(repo?: string): Promise<PRListResponse> {
+  const qs = repo ? `?repo=${encodeURIComponent(repo)}` : '';
+  return request<PRListResponse>(`/api/prs${qs}`);
+}
+
+export function sendReview(req: ReviewRequest): Promise<ReviewResponse> {
+  return post<ReviewResponse>('/api/review', req);
+}
+
+export function undoReview(req: UndoRequest): Promise<{ ok: boolean }> {
+  return post<{ ok: boolean }>('/api/review/undo', req);
 }

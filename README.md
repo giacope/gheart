@@ -20,14 +20,31 @@ With no configuration, gheart runs in **demo mode** with a deck of fictional-but
 
 ## Reviewing real PRs
 
-```bash
-GITHUB_TOKEN=ghp_yourtoken GHEART_REPO=owner/repo npm run dev
-```
+gheart has three auth modes, picked automatically from the environment:
+
+1. **GitHub OAuth (multi-user)** — the real thing. Each reviewer signs in with GitHub, picks one of their repos, and swipes with their own account. Reviews are submitted as the signed-in user, and every user gets their own deck (PRs you've already reviewed don't come back).
+
+   [Create a GitHub OAuth app](https://github.com/settings/applications/new) with callback URL `http://localhost:5173/api/auth/callback` (or your deployed origin + `/api/auth/callback`), then:
+
+   ```bash
+   GITHUB_CLIENT_ID=xxx GITHUB_CLIENT_SECRET=yyy npm run dev
+   ```
+
+2. **Single token** — quick and personal, no OAuth app needed:
+
+   ```bash
+   GITHUB_TOKEN=ghp_yourtoken GHEART_REPO=owner/repo npm run dev
+   ```
+
+3. **Demo** — no env vars at all.
 
 | Env var | What it does |
 | --- | --- |
-| `GITHUB_TOKEN` | Enables live mode. Needs `repo` scope (or fine-grained: PRs read/write). Swiping **right approves** the PR and **left requests changes** — for real. |
-| `GHEART_REPO` | Default `owner/repo` to load. You can also type any repo in the top bar. |
+| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | Enables the GitHub OAuth sign-in flow (multi-user mode). The OAuth app needs the `repo` scope granted at authorize time (gheart requests `repo read:user`). |
+| `GHEART_BASE_URL` | Public origin for the OAuth callback (e.g. `https://gheart.example.com`). Defaults to the request's host, which is right for local dev. |
+| `GITHUB_TOKEN` | Single-token live mode (used when no OAuth app is configured). Needs `repo` scope. Swiping **right approves** the PR and **left requests changes** — for real. |
+| `GHEART_REPO` | Default `owner/repo` to load. You can also pick any repo from the in-app picker. |
+| `GHEART_DATA` | Where the JSON store (users, sessions, per-user swipe history) lives. Default `data/gheart.json`. |
 | `ANTHROPIC_API_KEY` | Optional. Uses Claude to write the TL;DR and ELI5. Without it, a rule-based summarizer takes over. |
 | `GHEART_MODEL` | Claude model for summaries (default `claude-haiku-4-5-20251001`). |
 | `PORT` | API server port (default `8788`). |
@@ -61,6 +78,6 @@ npm start       # serve the built app + API on :8788
 
 ## How it's put together
 
-- `server/` — small Express API: `GET /api/prs` (fetches open PRs, enriches with files/checks, summarizes) and `POST /api/review` (submits the review). `mock.ts` powers demo mode with fully offline animated-SVG "UI clips".
+- `server/` — small Express API: `GET /api/prs` (fetches open PRs, enriches with files/checks, summarizes, and filters out ones you've already reviewed), `POST /api/review` (submits the review as you), `GET /api/repos` (your repos for the picker), and `/api/auth/*` (GitHub OAuth flow + cookie sessions). `store.ts` is a tiny JSON-file store for users, sessions, and per-user swipe history. `mock.ts` powers demo mode with fully offline animated-SVG "UI clips".
 - `src/` — React + Vite frontend. `SwipeDeck` implements the drag physics with pointer events (no gesture library): rotation follows the drag, stamps (`APPROVE` / `NOPE` / `SKIP`) fade in with distance, and vertical scrolling inside the card still works.
 - `shared/types.ts` — the `PRProfile` contract both sides speak.
