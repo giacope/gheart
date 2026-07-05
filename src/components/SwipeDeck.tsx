@@ -19,6 +19,7 @@ interface Props {
 }
 
 const SWIPE_THRESHOLD = 110;
+const SKIP_THRESHOLD = 90;
 const FLY_MS = 320;
 
 interface DragState {
