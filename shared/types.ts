@@ -49,6 +49,13 @@ export interface PRProfile {
   media?: PRMedia;
   /** 0-100 "match" score — how easy this PR is to say yes to. */
   matchScore: number;
+  /** Learned score from past swipe decisions in the brain, when it has any. */
+  compatibility?: Compatibility;
+  /** Review findings from the offline gstack pass (precomputed cards). */
+  greenFlags?: string[];
+  redFlags?: string[];
+  /** Structural signature, echoed back on swipe so the brain can capture it. */
+  fingerprint?: PRFingerprint;
 }
 
 export type SwipeVerdict = 'approve' | 'reject' | 'skip';
@@ -92,11 +99,69 @@ export interface UndoRequest {
   number: number;
 }
 
+export interface MemoryCitation {
+  pr: number;
+  verdict: SwipeVerdict;
+  reason: string;
+  url: string;
+}
+
+export interface Compatibility {
+  /** 0-100, learned from past swipes stored in the brain. */
+  score: number;
+  verdict: 'match' | 'maybe' | 'pass';
+  /** Human-readable line, e.g. "You rejected #327 for the same reason". */
+  why: string;
+  citations: MemoryCitation[];
+}
+
 export interface ReviewRequest {
   repo: string;
   number: number;
   verdict: SwipeVerdict;
   comment?: string;
+  /** Structured rejection reasons picked from the chips (e.g. "no-tests"). */
+  reasons?: string[];
+  /** Fingerprint + tldr so the brain can capture without refetching the PR. */
+  brain?: {
+    title: string;
+    tldr: string;
+    author: string;
+    url: string;
+    fingerprint: PRFingerprint;
+  };
+}
+
+/** Structural signature of a PR used to match it against past decisions. */
+export interface PRFingerprint {
+  size: 'tiny' | 'small' | 'medium' | 'large' | 'huge';
+  dirs: string[];
+  has_tests: boolean;
+  labels: string[];
+  tags: string[];
+  ci: CiState;
+}
+
+export interface PrecheckRequest {
+  repo?: string;
+  title: string;
+  /** Short prose summary of the diff the agent is about to open. */
+  summary: string;
+  fingerprint?: Partial<PRFingerprint>;
+}
+
+export interface PrecheckMemory {
+  pr: number;
+  verdict: SwipeVerdict;
+  reason: string;
+  url: string;
+}
+
+export interface PrecheckResponse {
+  predictedVerdict: 'approve' | 'reject' | 'unknown';
+  confidence: number;
+  memories: PrecheckMemory[];
+  advice: string;
 }
 
 export interface ReviewResponse {

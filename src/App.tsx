@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { PRProfile, SessionInfo, SwipeVerdict } from '../shared/types';
+import type { PRProfile, ReviewRequest, SessionInfo, SwipeVerdict } from '../shared/types';
 import { fetchPRs, fetchSession, logout, sendReview, undoReview } from './api';
 import ActionBar from './components/ActionBar';
 import EmptyDeck from './components/EmptyDeck';
 import LoginScreen from './components/LoginScreen';
 import MatchOverlay from './components/MatchOverlay';
+import ReasonChips from './components/ReasonChips';
 import RepoPicker from './components/RepoPicker';
 import SwipeDeck, { type SwipeDeckHandle } from './components/SwipeDeck';
 
@@ -28,6 +29,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [match, setMatch] = useState<PRProfile | null>(null);
+  const [pendingReject, setPendingReject] = useState<PRProfile | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const deck = useRef<SwipeDeckHandle>(null);
   const toastTimer = useRef<number>();
@@ -87,15 +89,26 @@ export default function App() {
     void logout().finally(() => window.location.reload());
   }, []);
 
-  const handleVerdict = useCallback(
-    (pr: PRProfile, verdict: SwipeVerdict) => {
-      setPrs((rest) => rest.filter((p) => p.id !== pr.id));
-      setHistory((h) => [...h, { pr, verdict }]);
-      if (verdict === 'approve') {
-        setMatch(pr);
-        window.setTimeout(() => setMatch(null), 1500);
-      }
-      void sendReview({ repo: pr.repo, number: pr.number, verdict })
+  const submitReview = useCallback(
+    (pr: PRProfile, verdict: SwipeVerdict, reasons?: string[]) => {
+      const req: ReviewRequest = {
+        repo: pr.repo,
+        number: pr.number,
+        verdict,
+        reasons,
+        // Echo the card's essentials so the server can capture the decision
+        // into the brain without refetching the PR.
+        brain: pr.fingerprint
+          ? {
+              title: pr.title,
+              tldr: pr.tldr,
+              author: pr.author.login,
+              url: pr.url,
+              fingerprint: pr.fingerprint,
+            }
+          : undefined,
+      };
+      void sendReview(req)
         .then((res) => {
           if (verdict !== 'approve') showToast(res.message);
         })
@@ -104,12 +117,43 @@ export default function App() {
     [showToast],
   );
 
+  const handleVerdict = useCallback(
+    (pr: PRProfile, verdict: SwipeVerdict) => {
+      setPrs((rest) => rest.filter((p) => p.id !== pr.id));
+      setHistory((h) => [...h, { pr, verdict }]);
+      if (verdict === 'approve') {
+        setMatch(pr);
+        window.setTimeout(() => setMatch(null), 1500);
+      }
+      if (verdict === 'reject') {
+        // Hold the review until the reason chips are answered — the chips are
+        // the structured signal the brain learns from.
+        setPendingReject(pr);
+        return;
+      }
+      submitReview(pr, verdict);
+    },
+    [submitReview],
+  );
+
+  const handleReasons = useCallback(
+    (reasons: string[]) => {
+      if (!pendingReject) return;
+      submitReview(pendingReject, 'reject', reasons);
+      setPendingReject(null);
+    },
+    [pendingReject, submitReview],
+  );
+
   const handleUndo = useCallback(() => {
     setHistory((h) => {
       if (h.length === 0) return h;
       const last = h[h.length - 1];
       setPrs((rest) => [last.pr, ...rest]);
-      if (last.verdict !== 'skip') {
+      // A reject still waiting on reason chips was never sent — just cancel it.
+      const wasPending = pendingReject?.id === last.pr.id;
+      if (wasPending) setPendingReject(null);
+      if (last.verdict !== 'skip' && !wasPending) {
         // Forget the swipe server-side so the card comes back on reload too.
         void undoReview({ repo: last.pr.repo, number: last.pr.number }).catch(() => undefined);
         if (!demo) {
@@ -118,11 +162,12 @@ export default function App() {
       }
       return h.slice(0, -1);
     });
-  }, [demo, showToast]);
+  }, [demo, pendingReject, showToast]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (match || loading || picking) return;
+      if (pendingReject && e.key !== 'u') return;
       if ((e.target as HTMLElement)?.tagName === 'INPUT') return;
       if (e.key === 'ArrowRight') deck.current?.swipe('approve');
       else if (e.key === 'ArrowLeft') deck.current?.swipe('reject');
@@ -131,7 +176,7 @@ export default function App() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [match, loading, picking, handleUndo]);
+  }, [match, loading, picking, pendingReject, handleUndo]);
 
   // ---- pre-auth states ----
   if (sessionError) {
@@ -240,6 +285,7 @@ export default function App() {
       </main>
 
       {match && <MatchOverlay pr={match} />}
+      {pendingReject && <ReasonChips pr={pendingReject} onSubmit={handleReasons} />}
       {toast && <div className="toast">{toast}</div>}
     </div>
   );

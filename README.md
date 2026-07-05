@@ -50,6 +50,29 @@ Three auth modes, picked automatically:
 | `ANTHROPIC_API_KEY` | Optional. Uses Claude to write the TL;DR and ELI5. Without it, a rule-based summarizer takes over. |
 | `GHEART_MODEL` | Claude model for summaries (default `claude-haiku-4-5-20251001`). |
 | `PORT` | API server port (default `8788`). |
+| `GHEART_BRAIN` | `auto` (default), `gbrain`, or `jsonl`. Auto uses the gbrain CLI when installed, else the `server/data/brain.jsonl` fallback — identical schema either way. |
+| `GHEART_BRAIN_DIR` | Where the brain lives (default `server/data`). |
+| `GHEART_REVIEW_MODEL` | Model for the offline `precompute` review pass (default `claude-opus-4-8`). |
+
+## The brain 🧠 (capture → score → precheck)
+
+Every swipe is captured into the brain as a structured `review-decision`; the
+deck reads it back before dealing:
+
+- **Capture on swipe** — a left swipe asks *why* (six reason chips: too big ·
+  no tests · touches auth · wrong layer · duplicate · vibe off) and stores the
+  verdict + chips + PR fingerprint. Fire-and-forget; the swipe never waits.
+- **Score on load** — each card gets a learned compatibility score with a
+  citation line ("You rejected #412 for having no tests — this revision fixes
+  exactly that") linking the past decisions it's based on.
+- **Agent pre-check** — `POST /api/precheck` lets an agent ask the brain
+  *before* opening a PR and self-correct:
+
+```bash
+npm run seed:brain     # loop-closure seed: pre-loads the #412 rejection
+npm run precheck:demo  # agent predicts reject → fixes the diff → predicts approve
+npm run precompute     # offline: Agent SDK reviews each demo PR → server/data/cards.json
+```
 
 ## The profile card
 

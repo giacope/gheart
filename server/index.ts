@@ -1,8 +1,11 @@
 import express from 'express';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type {
   PRListResponse,
+  PRProfile,
+  PrecheckRequest,
   RepoInfo,
   RepoListResponse,
   ReviewRequest,
@@ -10,6 +13,7 @@ import type {
   UndoRequest,
 } from '../shared/types';
 import { Auth } from './auth';
+import { createBrainStore, fingerprintFromProfile, type DecisionRecord } from './brain';
 import { fetchInstalledRepos, fetchOpenPRs, fetchUserRepos, submitReview } from './github';
 import { mockPRs } from './mock';
 import { setupRouter } from './setup';
@@ -39,6 +43,8 @@ const auth = new Auth(
 const DEFAULT_REPO = process.env.GHEART_REPO || '';
 const REPO_RE = /^[\w.-]+\/[\w.-]+$/;
 
+const brain = await createBrainStore();
+
 const DEMO_REPOS: RepoInfo[] = [
   {
     fullName: 'demo/lovable-app',
@@ -62,6 +68,19 @@ const DEMO_REPOS: RepoInfo[] = [
 
 app.use('/api/auth', auth.router());
 app.use('/api/setup', setupRouter(auth, store));
+
+/** Demo deck: precomputed cards.json (gstack pipeline output) if present, else mocks. */
+async function demoPRs(repo: string): Promise<PRProfile[]> {
+  const cardsFile =
+    process.env.GHEART_CARDS || path.resolve(process.cwd(), 'server/data/cards.json');
+  try {
+    const cards = JSON.parse(await readFile(cardsFile, 'utf8')) as PRProfile[];
+    if (Array.isArray(cards) && cards.length > 0) return cards;
+  } catch {
+    // no precomputed cards — fall through to mocks
+  }
+  return mockPRs(repo);
+}
 
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, demo: auth.mode === 'demo', mode: auth.mode });
@@ -114,10 +133,22 @@ app.get('/api/prs', (req, res) => {
         .json({ error: repo ? `"${repo}" is not an owner/name repo` : 'pick a repo first' });
       return;
     }
-    const all = demo ? mockPRs(repo) : await fetchOpenPRs(repo, user.accessToken);
+    const all = demo ? await demoPRs(repo) : await fetchOpenPRs(repo, user.accessToken);
     // Multi-user: each reviewer only sees PRs they haven't already reviewed.
     const swiped = store.swipedIds(user.id);
     const prs = all.filter((p) => !swiped.has(p.id));
+    // Enrich every card with its fingerprint and the learned compatibility
+    // score from past swipes. gbrain reads are fast, so this stays in-request.
+    await Promise.all(
+      prs.map(async (pr) => {
+        pr.fingerprint = pr.fingerprint ?? fingerprintFromProfile(pr);
+        try {
+          pr.compatibility = (await brain.scoreAgainstMemory(pr)) ?? undefined;
+        } catch (err) {
+          console.error(`gheart: compatibility failed for ${pr.id}:`, err);
+        }
+      }),
+    );
     const payload: PRListResponse = { demo, repo, prs };
     res.json(payload);
   })().catch((err) =>
@@ -132,7 +163,8 @@ app.post('/api/review', (req, res) => {
       res.status(401).json({ error: 'sign in with GitHub first' });
       return;
     }
-    const { repo, number, verdict, comment } = req.body as ReviewRequest;
+    const { repo, number, verdict, comment, reasons, brain: brainMeta } =
+      req.body as ReviewRequest;
     if (!REPO_RE.test(repo || '') || !Number.isInteger(number) || !verdict) {
       res.status(400).json({ error: 'expected { repo, number, verdict }' });
       return;
@@ -140,6 +172,28 @@ app.post('/api/review', (req, res) => {
     const demo = auth.mode === 'demo';
     if (!demo) await submitReview(repo, number, verdict, comment, user.accessToken);
     store.recordSwipe(user.id, `${repo}#${number}`, verdict);
+
+    // Capture the decision into the brain — fire-and-forget so the swipe
+    // never waits on memory writes. Skips are not judgments; don't store them.
+    if (verdict !== 'skip' && brainMeta) {
+      const decision: DecisionRecord = {
+        type: 'review-decision',
+        verdict,
+        repo,
+        pr: number,
+        title: brainMeta.title,
+        author: brainMeta.author,
+        reasons: (reasons ?? []).slice(0, 8).map(String),
+        fingerprint: brainMeta.fingerprint,
+        tldr: brainMeta.tldr,
+        url: brainMeta.url,
+        swiped_at: new Date().toISOString(),
+      };
+      void brain
+        .captureDecision(decision)
+        .catch((err) => console.error('gheart: capture failed:', err));
+    }
+
     const messages = {
       approve: demo ? `Demo: would approve ${repo}#${number}` : `Approved ${repo}#${number}`,
       reject: demo
@@ -173,6 +227,21 @@ app.post('/api/review/undo', (req, res) => {
   })().catch((err) =>
     res.status(502).json({ error: err instanceof Error ? err.message : 'undo failed' }),
   );
+});
+
+// Agent-facing: an agent about to open a PR posts a diff summary and gets a
+// predicted verdict plus the memories behind it — the brain as execution layer.
+app.post('/api/precheck', async (req, res) => {
+  const body = req.body as PrecheckRequest;
+  if (typeof body?.title !== 'string' || typeof body?.summary !== 'string') {
+    res.status(400).json({ error: 'expected { title, summary, fingerprint? }' });
+    return;
+  }
+  try {
+    res.json(await brain.precheck(body));
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : 'precheck failed' });
+  }
 });
 
 // In production, serve the built frontend.

@@ -88,6 +88,8 @@ interface Seed {
   labels: PRProfile['labels'];
   files: PRProfile['topFiles'];
   media?: PRProfile['media'];
+  greenFlags?: string[];
+  redFlags?: string[];
 }
 
 const SEEDS: Seed[] = [
@@ -118,6 +120,36 @@ const SEEDS: Seed[] = [
     media: { type: 'image', url: DARK_MODE_CLIP, alt: 'Dark mode toggle demo' },
   },
   {
+    // C001 from the gheart-eval corpus: seeded IDOR — the red-flag card.
+    number: 402,
+    title: 'feat: let support agents look up any order by id',
+    body: 'Adds GET /api/orders/:id for the support panel so agents can pull up an order directly. Returns the full order record as JSON.',
+    author: 'ship-it-sam',
+    avatarBg: '#8a4b2d',
+    branch: 'feat/order-lookup',
+    additions: 74,
+    deletions: 2,
+    changedFiles: 3,
+    commits: 2,
+    comments: 1,
+    ageDays: 1,
+    ci: 'passing',
+    labels: [
+      { name: 'feature', color: 'a2eeef' },
+      { name: 'support-tools', color: 'fbca04' },
+    ],
+    files: [
+      { path: 'server/orders/lookup.ts', additions: 48, deletions: 0 },
+      { path: 'server/routes.ts', additions: 14, deletions: 2 },
+      { path: 'src/support/OrderPanel.tsx', additions: 12, deletions: 0 },
+    ],
+    greenFlags: ['Small, focused diff — one endpoint, one panel'],
+    redFlags: [
+      'IDOR: GET /api/orders/:id returns any order with no ownership or role check',
+      'No test covers the unauthorized-caller path',
+    ],
+  },
+  {
     number: 351,
     title: 'fix: cart total ignores coupon when quantity changes',
     body: 'The memoized total was keyed on item ids only, so bumping a quantity kept the stale discount. Recomputes when quantities or coupons change and adds a regression test.',
@@ -135,6 +167,36 @@ const SEEDS: Seed[] = [
     files: [
       { path: 'src/cart/useCartTotal.ts', additions: 14, deletions: 9 },
       { path: 'src/cart/useCartTotal.test.ts', additions: 17, deletions: 0 },
+    ],
+  },
+  {
+    // C002-iter2: the loop-closure star. Iter1 (#412) was rejected for landing
+    // a schema drop with no rollback and no tests — that rejection is seeded
+    // into the brain by scripts/seed-brain.ts, so this card arrives with a
+    // high learned score citing the memory.
+    number: 414,
+    title: 'feat: drop legacy sessions table — now with rollback + tests',
+    body: 'Second attempt at the legacy sessions migration (first round: #412). Adds a down() rollback that restores the table from the archive, plus a migration test that runs up/down against a scratch database.',
+    author: 'schema-shepherd',
+    avatarBg: '#2d5a8a',
+    branch: 'feat/drop-legacy-sessions-v2',
+    additions: 128,
+    deletions: 41,
+    changedFiles: 4,
+    commits: 3,
+    comments: 2,
+    ageDays: 0,
+    ci: 'passing',
+    labels: [{ name: 'migration', color: '5319e7' }],
+    files: [
+      { path: 'db/migrations/0042_drop_legacy_sessions.ts', additions: 62, deletions: 8 },
+      { path: 'db/migrations/0042_drop_legacy_sessions.test.ts', additions: 44, deletions: 0 },
+      { path: 'services/sessions/store.ts', additions: 18, deletions: 30 },
+      { path: 'docs/runbooks/sessions-migration.md', additions: 4, deletions: 3 },
+    ],
+    greenFlags: [
+      'down() rollback restores the table from archive before dropping',
+      'Migration test exercises up → down → up on a scratch DB',
     ],
   },
   {
@@ -182,6 +244,31 @@ const SEEDS: Seed[] = [
       { path: 'src/styles/button.css', additions: 26, deletions: 0 },
     ],
     media: { type: 'image', url: BUTTON_CLIP, alt: 'Buy now button ripple animation' },
+  },
+  {
+    // C005: the clean decoy — everything a reviewer wants to see. Instant yes.
+    number: 418,
+    title: 'fix: reject negative quantities at the cart API boundary',
+    body: 'A crafted request could POST a negative quantity and drive the cart total below zero. Validates quantity at the API boundary and returns 422. The regression test reproduces the exploit first, then asserts the fix.',
+    author: 'belt-and-braces',
+    avatarBg: '#3d7068',
+    branch: 'fix/negative-quantity',
+    additions: 26,
+    deletions: 2,
+    changedFiles: 2,
+    commits: 1,
+    comments: 0,
+    ageDays: 0,
+    ci: 'passing',
+    labels: [{ name: 'bug', color: 'd73a4a' }],
+    files: [
+      { path: 'server/cart/validate.ts', additions: 11, deletions: 2 },
+      { path: 'server/cart/validate.test.ts', additions: 15, deletions: 0 },
+    ],
+    greenFlags: [
+      'Input validated at the API boundary, not in the UI',
+      'Regression test reproduces the exploit before asserting the fix',
+    ],
   },
   {
     number: 349,
@@ -334,6 +421,8 @@ export function mockPRs(repo = 'demo/lovable-app'): PRProfile[] {
       topFiles: s.files,
       media: s.media,
       matchScore: matchScore(summaryInput),
+      greenFlags: s.greenFlags,
+      redFlags: s.redFlags,
     };
   });
 }

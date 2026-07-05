@@ -79,6 +79,54 @@ export default function PRCard({ pr }: { pr: PRProfile }) {
           </span>
         </div>
 
+        {pr.compatibility && (
+          <div className={`brain-row ${pr.compatibility.verdict}`}>
+            <div className="brain-score">
+              🧠 {pr.compatibility.score}%{' '}
+              {pr.compatibility.verdict === 'match'
+                ? 'your type'
+                : pr.compatibility.verdict === 'maybe'
+                  ? 'maybe your type'
+                  : 'not your type'}
+            </div>
+            <p className="brain-why">{pr.compatibility.why}</p>
+            {pr.compatibility.citations.length > 0 && (
+              <div className="brain-citations">
+                {pr.compatibility.citations.map((c) => (
+                  <a
+                    key={c.pr}
+                    href={c.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={`brain-cite ${c.verdict}`}
+                    onPointerDown={(e) => e.stopPropagation()}
+                  >
+                    {c.verdict === 'approve' ? '💚' : '💔'} #{c.pr}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {(pr.greenFlags?.length || pr.redFlags?.length) ? (
+          <section>
+            <h3>Flags</h3>
+            <ul className="flag-list">
+              {pr.greenFlags?.map((f) => (
+                <li key={f} className="flag green">
+                  <span aria-hidden>🟢</span> {f}
+                </li>
+              ))}
+              {pr.redFlags?.map((f) => (
+                <li key={f} className="flag red">
+                  <span aria-hidden>🚩</span> {f}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
         <div className="stat-chips">
           <span className="chip add">+{pr.stats.additions.toLocaleString()}</span>
           <span className="chip del">−{pr.stats.deletions.toLocaleString()}</span>
