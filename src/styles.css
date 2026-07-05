@@ -1,7 +1,7 @@
 :root {
-  --bg: #0d0d14;
-  --card: #191924;
-  --card-2: #20202e;
+  --bg: #0b0b10;
+  --card: #16161f;
+  --card-2: #1e1e2a;
   --text: #f2f2f7;
   --muted: #9a9ab0;
   --green: #35d07f;
@@ -25,7 +25,7 @@ body,
 }
 
 body {
-  background: radial-gradient(1200px 800px at 50% -10%, #232338 0%, var(--bg) 60%);
+  background: radial-gradient(1100px 700px at 50% -14%, #1c1c2b 0%, var(--bg) 62%);
   color: var(--text);
   font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   overflow: hidden;
@@ -41,18 +41,19 @@ body {
 .topbar {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px 20px;
+  gap: 8px;
+  padding: 14px 22px 10px;
 }
 
 .logo {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 800;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.4px;
   background: linear-gradient(90deg, #35d07f, #58e6a8);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  margin-right: 6px;
 }
 
 .logo-heart {
@@ -61,22 +62,24 @@ body {
 
 .repo-button {
   margin-left: auto;
-  background: var(--card);
-  border: 1px solid #2e2e40;
-  color: var(--text);
-  border-radius: 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--muted);
+  border-radius: 999px;
   padding: 7px 12px;
-  font-size: 13px;
+  font-size: 12.5px;
   font-family: ui-monospace, monospace;
   cursor: pointer;
   max-width: 300px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: color 120ms ease, background 120ms ease;
 }
 
 .repo-button:hover {
-  border-color: var(--green);
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .repo-caret {
@@ -85,27 +88,29 @@ body {
 }
 
 .brain-button {
-  background: var(--card);
-  border: 1px solid #2e2e40;
-  color: var(--text);
-  border-radius: 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--muted);
+  border-radius: 999px;
   padding: 7px 12px;
-  font-size: 13px;
+  font-size: 12.5px;
   font-family: ui-monospace, monospace;
   cursor: pointer;
   white-space: nowrap;
+  transition: color 120ms ease, background 120ms ease;
 }
 
 .brain-button:hover {
-  border-color: var(--green);
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .restart {
   background: var(--green);
   color: #06281a;
   border: none;
-  border-radius: 10px;
-  padding: 7px 14px;
+  border-radius: 999px;
+  padding: 8px 16px;
   font-weight: 700;
   cursor: pointer;
   font-size: 13px;
@@ -113,12 +118,13 @@ body {
 
 .demo-badge {
   text-decoration: none;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.8px;
+  white-space: nowrap;
   color: var(--amber);
-  border: 1px solid var(--amber);
+  border: 1px solid rgba(255, 207, 51, 0.45);
   border-radius: 999px;
   padding: 4px 10px;
 }
@@ -136,10 +142,10 @@ body {
 
 .deck {
   position: relative;
-  width: min(430px, 94vw);
+  width: min(420px, 94vw);
   flex: 1;
   min-height: 0;
-  max-height: 720px;
+  max-height: 780px;
 }
 
 .deck-card {
@@ -161,17 +167,18 @@ body {
 /* ---------- stamps ---------- */
 .stamp {
   position: absolute;
-  top: 28px;
+  top: 30px;
   z-index: 5;
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 900;
-  letter-spacing: 3px;
-  padding: 4px 14px;
-  border: 4px solid;
-  border-radius: 8px;
+  letter-spacing: 4px;
+  padding: 5px 16px;
+  border: 3px solid;
+  border-radius: 10px;
   opacity: 0;
   pointer-events: none;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(4px);
 }
 
 .stamp.like {
@@ -196,24 +203,34 @@ body {
   transform: translateX(-50%) rotate(-6deg);
 }
 
-/* ---------- card ---------- */
+/* ---------- card ----------
+   Bumble-style profile: the preview fills the whole card like a photo; the
+   details live below the fold. The card itself is the scroll container, so
+   scrolling down slides the profile text up over the photo. */
 .pr-card {
   height: 100%;
   display: flex;
   flex-direction: column;
   background: var(--card);
-  border: 1px solid #2b2b3c;
+  border: 1px solid var(--line);
   border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+  scroll-snap-type: y proximity;
+  scrollbar-width: none;
+}
+
+.pr-card::-webkit-scrollbar {
+  display: none;
 }
 
 .card-hero {
   position: relative;
-  height: 38%;
-  min-height: 170px;
+  height: 100%;
   flex: none;
   background: var(--card-2);
+  scroll-snap-align: start;
 }
 
 .hero-media {
@@ -241,15 +258,46 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  padding: 12px 14px;
-  background: linear-gradient(180deg, #0b0b12, #14141d);
-  font: 12.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #0b0b12, #12121b);
+  font: 13px/1.65 ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--muted);
+}
+.term-chrome {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid var(--line);
+}
+.term-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+}
+.term-chrome .term-dot:nth-child(1) {
+  background: #ff5f57;
+}
+.term-chrome .term-dot:nth-child(2) {
+  background: #febc2e;
+}
+.term-chrome .term-dot:nth-child(3) {
+  background: #28c840;
+}
+.term-chrome-title {
+  margin-left: 8px;
+  font-size: 11px;
   color: var(--muted);
 }
 .term-body {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
+  padding: 16px 18px;
 }
 .term-line {
   white-space: pre;
@@ -330,40 +378,50 @@ body {
 
 .clip-badge {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  font-size: 11px;
+  top: 14px;
+  right: 14px;
+  font-size: 10.5px;
   font-weight: 700;
-  background: rgba(0, 0, 0, 0.6);
+  letter-spacing: 0.3px;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
-  padding: 4px 10px;
-  color: #fff;
+  padding: 5px 11px;
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .hero-shade {
   position: absolute;
   inset: auto 0 0 0;
-  height: 70%;
-  background: linear-gradient(transparent, rgba(13, 13, 20, 0.92));
+  height: 62%;
+  background: linear-gradient(
+    transparent,
+    rgba(11, 11, 16, 0.45) 40%,
+    rgba(11, 11, 16, 0.94)
+  );
   pointer-events: none;
 }
 
+/* Keep clear of the action bar straddling the card's bottom edge. */
 .hero-title {
   position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 12px;
+  left: 22px;
+  right: 22px;
+  bottom: 44px;
 }
 
 .hero-title h2 {
-  margin: 0 0 6px;
-  font-size: 19px;
-  line-height: 1.25;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+  margin: 0 0 10px;
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  line-height: 1.18;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
 }
 
 .hero-age {
-  font-weight: 400;
+  font-weight: 300;
   color: #d8d8e6;
 }
 
@@ -372,14 +430,59 @@ body {
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: #cfcfe0;
+  color: #d4d4e2;
 }
 
 .avatar {
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.6);
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+}
+
+/* The essentials strip at the photo's base: a thin mergeability meter. */
+.hero-match {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.hero-match .match-bar {
+  width: 96px;
+  flex: none;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.hero-match .match-text {
+  font-size: 12px;
+  color: #cfcfe0;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+}
+
+/* Scroll cue: there's more profile below the photo. */
+.hero-cue {
+  position: absolute;
+  right: 2px;
+  bottom: -6px;
+  font-size: 18px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.65);
+  animation: cue-bob 1.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes cue-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translateY(4px);
+    opacity: 1;
+  }
 }
 
 .draft-pill {
@@ -395,26 +498,30 @@ body {
 }
 
 .card-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 14px 16px 16px;
+  flex: none;
+  min-height: 40%;
+  padding: 22px 22px 56px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 18px;
+  background: var(--card);
+  scroll-snap-align: start;
 }
 
 .card-body h3 {
-  margin: 0 0 4px;
-  font-size: 11px;
+  margin: 0 0 6px;
+  font-size: 10.5px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1.2px;
+  letter-spacing: 1.6px;
   color: var(--muted);
 }
 
 .card-body p {
   margin: 0;
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.55;
+  color: #e2e2ec;
 }
 
 .eli5 {
@@ -422,15 +529,9 @@ body {
   font-style: italic;
 }
 
-/* match bar */
-.match-row {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
+/* match bar (rendered inside the hero overlay) */
 .match-bar {
-  height: 8px;
+  height: 4px;
   border-radius: 999px;
   background: #2b2b3c;
   overflow: hidden;
@@ -463,16 +564,16 @@ body {
 .tag-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 7px;
 }
 
 .chip,
 .tag {
   font-size: 12px;
-  padding: 4px 10px;
+  padding: 5px 11px;
   border-radius: 999px;
-  background: var(--card-2);
-  border: 1px solid #30304a;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid transparent;
   color: #d4d4e6;
 }
 
@@ -490,17 +591,17 @@ em.del {
 
 .chip.ci-passing {
   color: var(--green);
-  border-color: rgba(53, 208, 127, 0.5);
+  background: rgba(53, 208, 127, 0.1);
 }
 
 .chip.ci-failing {
   color: var(--red);
-  border-color: rgba(255, 88, 100, 0.5);
+  background: rgba(255, 88, 100, 0.1);
 }
 
 .chip.ci-pending {
   color: var(--amber);
-  border-color: rgba(255, 207, 51, 0.5);
+  background: rgba(255, 207, 51, 0.1);
 }
 
 .chip.ci-none {
@@ -508,8 +609,8 @@ em.del {
 }
 
 .tag {
-  background: rgba(53, 208, 127, 0.08);
-  border-color: rgba(53, 208, 127, 0.3);
+  background: rgba(53, 208, 127, 0.09);
+  color: #a9e6c6;
 }
 
 /* file list */
@@ -542,9 +643,9 @@ em.del {
 
 /* footer */
 .card-footer {
-  margin-top: auto;
-  padding-top: 10px;
-  border-top: 1px solid #2b2b3c;
+  margin-top: 2px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -554,7 +655,7 @@ em.del {
 }
 
 .branch {
-  background: var(--card-2);
+  background: rgba(255, 255, 255, 0.055);
   border-radius: 6px;
   padding: 2px 7px;
   font-size: 11px;
@@ -574,20 +675,25 @@ em.del {
   text-decoration: none;
 }
 
-/* ---------- action bar ---------- */
+/* ---------- action bar ----------
+   Straddles the card's bottom edge, Tinder-style. */
 .action-bar {
   display: flex;
-  gap: 18px;
+  gap: 16px;
   align-items: center;
-  padding: 16px 0 4px;
+  margin-top: -30px;
+  position: relative;
+  z-index: 30;
 }
 
 .action {
-  width: 58px;
-  height: 58px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
-  border: 2px solid;
-  background: var(--card);
+  border: 1px solid var(--line);
+  background: rgba(22, 22, 31, 0.88);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.5);
   font-size: 24px;
   cursor: pointer;
   display: grid;
@@ -608,43 +714,49 @@ em.del {
 
 .action.like {
   color: var(--green);
-  border-color: var(--green);
-  box-shadow: 0 0 18px rgba(53, 208, 127, 0.25);
+}
+
+.action.like:hover:not(:disabled) {
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.5), 0 0 22px rgba(53, 208, 127, 0.35);
 }
 
 .action.nope {
   color: var(--red);
-  border-color: var(--red);
-  box-shadow: 0 0 18px rgba(255, 88, 100, 0.2);
+}
+
+.action.nope:hover:not(:disabled) {
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.5), 0 0 22px rgba(255, 88, 100, 0.3);
 }
 
 .action.skip {
   color: var(--blue);
-  border-color: var(--blue);
+  width: 48px;
+  height: 48px;
+  font-size: 19px;
 }
 
 .action.undo {
   color: var(--amber);
-  border-color: var(--amber);
-  width: 46px;
-  height: 46px;
-  font-size: 19px;
+  width: 48px;
+  height: 48px;
+  font-size: 18px;
 }
 
 .hint {
-  margin: 6px 0 0;
-  font-size: 12px;
-  color: var(--muted);
+  margin: 12px 0 0;
+  font-size: 11px;
+  letter-spacing: 0.2px;
+  color: rgba(154, 154, 176, 0.75);
 }
 
 /* ---------- swipe history (recent swipes drawer) ---------- */
 .swipe-history {
-  width: min(430px, 94vw);
+  width: min(420px, 94vw);
   flex: none;
-  margin-top: 10px;
+  margin-top: 12px;
   background: var(--card);
-  border: 1px solid #2b2b3c;
-  border-radius: 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
   overflow: hidden;
 }
 
@@ -902,21 +1014,22 @@ em.del {
 
 /* ---------- brain row (learned compatibility) ---------- */
 .brain-row {
-  border: 1px solid #3a3a52;
-  border-radius: 12px;
-  padding: 10px 12px;
-  margin: 10px 0 2px;
-  background: var(--card-2);
+  border: none;
+  border-radius: 16px;
+  padding: 13px 15px;
+  background: rgba(255, 255, 255, 0.045);
 }
 
 .brain-row.match {
-  border-color: rgba(53, 208, 127, 0.55);
-  box-shadow: 0 0 14px rgba(53, 208, 127, 0.12) inset;
+  background: rgba(53, 208, 127, 0.09);
+}
+
+.brain-row.maybe {
+  background: rgba(255, 207, 51, 0.07);
 }
 
 .brain-row.pass {
-  border-color: rgba(255, 88, 100, 0.55);
-  box-shadow: 0 0 14px rgba(255, 88, 100, 0.12) inset;
+  background: rgba(255, 88, 100, 0.08);
 }
 
 .brain-score {
@@ -1606,13 +1719,13 @@ em.del {
 
 /* ── feature: loop-closure ribbon ── */
 /* Celebrates a PR that fixes every reason a past PR was rejected for:
-   reject → memory → the fixed revision arrives. Sits at the top of .brain-row,
-   borrowing the green of .match-fill.good and the .brain-row.match glow. */
+   reject → memory → the fixed revision arrives. Rides on the hero photo,
+   right above the title — the first thing a reviewer sees. */
 .loop-ribbon {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   padding: 4px 12px;
   font-size: 11px;
   font-weight: 800;

@@ -32,14 +32,23 @@ function scoreLabel(score: number): string {
   return 'proceed with caution';
 }
 
+/**
+ * Bumble-style profile: the preview is the photo and fills the whole card;
+ * the essentials sit on a gradient at the bottom, and everything else lives
+ * below the fold — scroll the card to read the full profile.
+ */
 export default function PRCard({ pr }: { pr: PRProfile }) {
   const ci = CI_BADGE[pr.ci];
+  const mood = pr.matchScore >= 60 ? 'good' : pr.matchScore >= 40 ? 'meh' : 'bad';
   return (
     <article className="pr-card">
       <div className="card-hero">
         <CardPreview pr={pr} fallbackEmoji={bannerEmoji(pr)} />
         <div className="hero-shade" />
         <div className="hero-title">
+          {pr.compatibility?.closesLoop && (
+            <div className="loop-ribbon">↩ back — and it listened</div>
+          )}
           <h2>
             {pr.title}
             <span className="hero-age">
@@ -53,27 +62,23 @@ export default function PRCard({ pr }: { pr: PRProfile }) {
               {pr.draft && <em className="draft-pill">draft</em>}
             </span>
           </div>
+          <div className="hero-match">
+            <div className="match-bar">
+              <div className={`match-fill ${mood}`} style={{ width: `${pr.matchScore}%` }} />
+            </div>
+            <span className="match-text">
+              {pr.matchScore}% mergeable · {scoreLabel(pr.matchScore)}
+            </span>
+          </div>
+          <div className="hero-cue" aria-hidden>
+            ⌄
+          </div>
         </div>
       </div>
 
       <div className="card-body">
-        <div className="match-row">
-          <div className="match-bar">
-            <div
-              className={`match-fill ${pr.matchScore >= 60 ? 'good' : pr.matchScore >= 40 ? 'meh' : 'bad'}`}
-              style={{ width: `${pr.matchScore}%` }}
-            />
-          </div>
-          <span className="match-text">
-            {pr.matchScore}% mergeable — {scoreLabel(pr.matchScore)}
-          </span>
-        </div>
-
         {pr.compatibility && (
           <div className={`brain-row ${pr.compatibility.verdict}`}>
-            {pr.compatibility.closesLoop && (
-              <div className="loop-ribbon">↩ back — and it listened</div>
-            )}
             <div className="brain-score">
               🧠 {pr.compatibility.score}%{' '}
               {pr.compatibility.verdict === 'match'
@@ -120,6 +125,16 @@ export default function PRCard({ pr }: { pr: PRProfile }) {
           </section>
         ) : null}
 
+        <section>
+          <h3>TL;DR</h3>
+          <p>{pr.tldr}</p>
+        </section>
+
+        <section>
+          <h3>Explain like I&apos;m five</h3>
+          <p className="eli5">“{pr.eli5}”</p>
+        </section>
+
         <div className="stat-chips">
           <span className="chip add">+{pr.stats.additions.toLocaleString()}</span>
           <span className="chip del">−{pr.stats.deletions.toLocaleString()}</span>
@@ -130,16 +145,6 @@ export default function PRCard({ pr }: { pr: PRProfile }) {
             {ci.icon} {ci.label}
           </span>
         </div>
-
-        <section>
-          <h3>TL;DR</h3>
-          <p>{pr.tldr}</p>
-        </section>
-
-        <section>
-          <h3>Explain like I&apos;m five</h3>
-          <p className="eli5">“{pr.eli5}”</p>
-        </section>
 
         {pr.tags.length > 0 && (
           <div className="tag-row">

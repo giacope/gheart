@@ -14,8 +14,13 @@ export const PALETTE = {
   pink: '#e94074',
 } as const;
 
-/** The hero is a wide landscape strip; keep every SVG on one canvas. */
-export const CANVAS = { w: 400, h: 180 } as const;
+/**
+ * The hero is the card's full-bleed "profile photo" — a portrait canvas.
+ * It renders with object-fit: cover, so edges can be cropped on unusual
+ * aspect ratios: keep meaningful content inside ~44px side / ~60px top and
+ * bottom margins and let backgrounds run to the edge.
+ */
+export const CANVAS = { w: 400, h: 620 } as const;
 
 /** Deterministic 32-bit hash so a given PR always renders the same preview. */
 export function hashString(s: string): number {

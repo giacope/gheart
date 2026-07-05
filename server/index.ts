@@ -5,7 +5,6 @@ import { fileURLToPath } from 'node:url';
 import type {
   PRListResponse,
   PRProfile,
-  PrecheckRequest,
   RepoInfo,
   RepoListResponse,
   ReviewRequest,
@@ -253,21 +252,6 @@ app.get('/api/brain', (req, res) => {
   })().catch((err) =>
     res.status(502).json({ error: err instanceof Error ? err.message : 'failed to load brain' }),
   );
-});
-
-// Agent-facing: an agent about to open a PR posts a diff summary and gets a
-// predicted verdict plus the memories behind it — the brain as execution layer.
-app.post('/api/precheck', async (req, res) => {
-  const body = req.body as PrecheckRequest;
-  if (typeof body?.title !== 'string' || typeof body?.summary !== 'string') {
-    res.status(400).json({ error: 'expected { title, summary, fingerprint? }' });
-    return;
-  }
-  try {
-    res.json(await brain.precheck(body));
-  } catch (err) {
-    res.status(500).json({ error: err instanceof Error ? err.message : 'precheck failed' });
-  }
 });
 
 // In production, serve the built frontend.

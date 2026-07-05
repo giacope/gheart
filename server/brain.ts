@@ -9,8 +9,6 @@ import type {
   MemoryCitation,
   PRFingerprint,
   PRProfile,
-  PrecheckRequest,
-  PrecheckResponse,
 } from '../shared/types';
 
 const exec = promisify(execFile);
@@ -25,8 +23,6 @@ export interface BrainStore {
   captureDecision(d: DecisionRecord): Promise<void>;
   /** Learned compatibility for a PR, or null when the brain is empty. */
   scoreAgainstMemory(pr: PRProfile): Promise<Compatibility | null>;
-  /** Agent-facing: predict the verdict for a diff that hasn't been opened yet. */
-  precheck(req: PrecheckRequest): Promise<PrecheckResponse>;
   /** Read-only view of everything the brain has learned, newest memory first. */
   snapshot(): Promise<BrainSnapshot>;
 }
@@ -305,47 +301,6 @@ export class JsonlBrainStore implements BrainStore {
   async snapshot(): Promise<BrainSnapshot> {
     return snapshotFromDecisions(await this.load());
   }
-
-  async precheck(req: PrecheckRequest): Promise<PrecheckResponse> {
-    const decisions = await this.load();
-    const fp: PRFingerprint = {
-      size: req.fingerprint?.size ?? 'medium',
-      dirs: req.fingerprint?.dirs ?? [],
-      has_tests: req.fingerprint?.has_tests ?? false,
-      labels: req.fingerprint?.labels ?? [],
-      tags: req.fingerprint?.tags ?? [],
-      ci: req.fingerprint?.ci ?? 'none',
-    };
-    const matches = rankMatches(fp, `${req.title} ${req.summary}`, decisions);
-    const compat = compatibilityFromMatches(matches);
-
-    if (!compat) {
-      return {
-        predictedVerdict: 'unknown',
-        confidence: 0,
-        memories: [],
-        advice: 'No relevant memories yet — open the PR and let the human decide.',
-      };
-    }
-
-    const predictedVerdict =
-      compat.score >= 65 ? 'approve' : compat.score <= 40 ? 'reject' : 'unknown';
-    const confidence = Math.min(0.95, Math.abs(compat.score - 50) / 50 + matches[0].sim * 0.4);
-    const outstanding = matches.flatMap((m) => m.outstanding);
-    const advice =
-      predictedVerdict === 'reject'
-        ? `Likely rejected: past reviews flagged ${describeReasons([...new Set(outstanding)])}. Fix that before opening the PR.`
-        : predictedVerdict === 'approve'
-          ? `Likely approved — this matches what the reviewer said yes to before. ${compat.why}`
-          : `Could go either way. ${compat.why}`;
-
-    return {
-      predictedVerdict,
-      confidence: Number(confidence.toFixed(2)),
-      memories: compat.citations.map((c) => ({ ...c })),
-      advice,
-    };
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -408,22 +363,6 @@ export class GbrainStore implements BrainStore {
     // The mirror holds every decision (gbrain pages are written from it), so
     // it's the authoritative source for the read-only view.
     return this.mirror.snapshot();
-  }
-
-  async precheck(req: PrecheckRequest): Promise<PrecheckResponse> {
-    const base = await this.mirror.precheck(req);
-    try {
-      const { stdout } = await exec(
-        'gbrain',
-        ['think', `Would the reviewer approve or reject this PR? ${req.title} — ${req.summary}`],
-        { cwd: this.brainDir, timeout: 20_000 },
-      );
-      const thought = stdout.trim();
-      if (thought) return { ...base, advice: thought.slice(0, 600) };
-    } catch (err) {
-      console.error('gheart: gbrain think failed, using local precheck:', err);
-    }
-    return base;
   }
 }
 
