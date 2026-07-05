@@ -1469,3 +1469,19 @@ em.del {
     font-size: 22px;
   }
 }
+
+/* ── feature: approve capture ── */
+.reason-overlay.approve {
+  background: rgba(6, 20, 13, 0.82);
+}
+
+.reason-overlay.approve .reason-chip.on {
+  border-color: var(--green);
+  color: var(--green);
+  box-shadow: 0 0 14px rgba(53, 208, 127, 0.2);
+}
+
+.reason-overlay.approve .reason-send {
+  background: var(--green);
+  color: #06281a;
+}

@@ -27,6 +27,7 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [match, setMatch] = useState<PRProfile | null>(null);
   const [pendingReject, setPendingReject] = useState<PRProfile | null>(null);
+  const [pendingApprove, setPendingApprove] = useState<PRProfile | null>(null);
   const [brainOpen, setBrainOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const deck = useRef<SwipeDeckHandle>(null);
@@ -120,8 +121,10 @@ export default function App() {
       setPrs((rest) => rest.filter((p) => p.id !== pr.id));
       setHistory((h) => [...h, { pr, verdict }]);
       if (verdict === 'approve') {
-        setMatch(pr);
-        window.setTimeout(() => setMatch(null), 1500);
+        // Hold the review + match until the love chips are answered — the
+        // captured reasons are the brain's explicit positive signal.
+        setPendingApprove(pr);
+        return;
       }
       if (verdict === 'reject') {
         // Hold the review until the reason chips are answered — the chips are
@@ -143,14 +146,27 @@ export default function App() {
     [pendingReject, submitReview],
   );
 
+  const handleApproveReasons = useCallback(
+    (reasons: string[]) => {
+      if (!pendingApprove) return;
+      submitReview(pendingApprove, 'approve', reasons);
+      // Now play the match beat that a right-swipe usually shows immediately.
+      setMatch(pendingApprove);
+      window.setTimeout(() => setMatch(null), 1500);
+      setPendingApprove(null);
+    },
+    [pendingApprove, submitReview],
+  );
+
   const handleUndo = useCallback(() => {
     setHistory((h) => {
       if (h.length === 0) return h;
       const last = h[h.length - 1];
       setPrs((rest) => [last.pr, ...rest]);
-      // A reject still waiting on reason chips was never sent — just cancel it.
-      const wasPending = pendingReject?.id === last.pr.id;
-      if (wasPending) setPendingReject(null);
+      // A reject/approve still waiting on reason chips was never sent — just cancel it.
+      const wasPending = pendingReject?.id === last.pr.id || pendingApprove?.id === last.pr.id;
+      if (pendingReject?.id === last.pr.id) setPendingReject(null);
+      if (pendingApprove?.id === last.pr.id) setPendingApprove(null);
       if (last.verdict !== 'skip' && !wasPending) {
         // Forget the swipe server-side so the card comes back on reload too.
         void undoReview({ repo: last.pr.repo, number: last.pr.number }).catch(() => undefined);
@@ -160,12 +176,12 @@ export default function App() {
       }
       return h.slice(0, -1);
     });
-  }, [demo, pendingReject, showToast]);
+  }, [demo, pendingReject, pendingApprove, showToast]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (match || loading || picking) return;
-      if (pendingReject && e.key !== 'u') return;
+      if ((pendingReject || pendingApprove) && e.key !== 'u') return;
       if ((e.target as HTMLElement)?.tagName === 'INPUT') return;
       if (e.key === 'ArrowRight') deck.current?.swipe('approve');
       else if (e.key === 'ArrowLeft') deck.current?.swipe('reject');
@@ -174,7 +190,7 @@ export default function App() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [match, loading, picking, pendingReject, handleUndo]);
+  }, [match, loading, picking, pendingReject, pendingApprove, handleUndo]);
 
   // ---- pre-auth states ----
   if (sessionError) {
@@ -293,6 +309,9 @@ export default function App() {
       {brainOpen && <BrainPanel currentPrs={prs} onClose={() => setBrainOpen(false)} />}
       {match && <MatchOverlay pr={match} />}
       {pendingReject && <ReasonChips pr={pendingReject} onSubmit={handleReasons} />}
+      {pendingApprove && (
+        <ReasonChips verdict="approve" pr={pendingApprove} onSubmit={handleApproveReasons} />
+      )}
       {toast && <div className="toast">{toast}</div>}
     </div>
   );
