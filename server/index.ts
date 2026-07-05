@@ -16,6 +16,7 @@ import { Auth } from './auth';
 import { createBrainStore, fingerprintFromProfile, type DecisionRecord } from './brain';
 import { fetchInstalledRepos, fetchOpenPRs, fetchUserRepos, submitReview } from './github';
 import { mockPRs } from './mock';
+import { attachPreview } from './preview/generate';
 import { setupRouter } from './setup';
 import { Store } from './store';
 
@@ -137,11 +138,14 @@ app.get('/api/prs', (req, res) => {
     // Multi-user: each reviewer only sees PRs they haven't already reviewed.
     const swiped = store.swipedIds(user.id);
     const prs = all.filter((p) => !swiped.has(p.id));
-    // Enrich every card with its fingerprint and the learned compatibility
-    // score from past swipes. gbrain reads are fast, so this stays in-request.
+    // Enrich every card with its fingerprint, the learned compatibility score
+    // from past swipes, and a synthesized preview when the author left none.
+    // All of this is fast/local, so it stays in-request.
+    const now = new Date().toISOString();
     await Promise.all(
       prs.map(async (pr) => {
         pr.fingerprint = pr.fingerprint ?? fingerprintFromProfile(pr);
+        attachPreview(pr, now);
         try {
           pr.compatibility = (await brain.scoreAgainstMemory(pr)) ?? undefined;
         } catch (err) {

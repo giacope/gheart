@@ -403,6 +403,8 @@ export function mockPRs(repo = 'demo/lovable-app'): PRProfile[] {
       author: { login: s.author, avatarUrl: avatar(s.author, s.avatarBg) },
       branch: s.branch,
       baseBranch: 'main',
+      // Stable synthetic SHA so a mock PR keys the same preview every run.
+      headSha: `mock${s.number.toString(16).padStart(8, '0')}`,
       createdAt,
       ageDays: s.ageDays,
       draft: s.draft ?? false,

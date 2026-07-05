@@ -1,4 +1,5 @@
 import type { CiState, PRProfile } from '../../shared/types';
+import CardPreview from './CardPreview';
 
 const CI_BADGE: Record<CiState, { icon: string; label: string; cls: string }> = {
   passing: { icon: '✓', label: 'CI passing', cls: 'ci-passing' },
@@ -36,18 +37,7 @@ export default function PRCard({ pr }: { pr: PRProfile }) {
   return (
     <article className="pr-card">
       <div className="card-hero">
-        {pr.media ? (
-          pr.media.type === 'video' ? (
-            <video src={pr.media.url} autoPlay muted loop playsInline className="hero-media" />
-          ) : (
-            <img src={pr.media.url} alt={pr.media.alt ?? 'UI change preview'} className="hero-media" />
-          )
-        ) : (
-          <div className="hero-fallback" aria-hidden>
-            <span className="hero-emoji">{bannerEmoji(pr)}</span>
-          </div>
-        )}
-        {pr.media && <span className="clip-badge">▶ UI preview</span>}
+        <CardPreview pr={pr} fallbackEmoji={bannerEmoji(pr)} />
         <div className="hero-shade" />
         <div className="hero-title">
           <h2>

@@ -17,6 +17,55 @@ export interface PRMedia {
   alt?: string;
 }
 
+/** What kind of change this is — drives which preview we synthesize. */
+export type PreviewKind =
+  | 'frontend'
+  | 'cli'
+  | 'api'
+  | 'migration'
+  | 'docs'
+  | 'tests'
+  | 'generic';
+
+/** 'rendered' = a real screenshot from running the app; 'generated' = synthesized. */
+export type PreviewTier = 'rendered' | 'generated';
+
+export type PreviewStatus = 'generating' | 'ready' | 'failed';
+
+/** One step of a CLI terminal animation: text to type/print, then a pause. */
+export interface TerminalFrame {
+  /** Line(s) to reveal. A leading "$ " marks a typed command (animated char-by-char). */
+  text: string;
+  /** Pause after this frame, ms. */
+  delayMs: number;
+}
+
+/**
+ * A self-contained preview artifact. Every variant is inert and embeddable —
+ * no external network, no scripts — so it serializes into the card payload and
+ * renders client-side with a locked-down surface.
+ */
+export type PreviewArtifact =
+  | { format: 'svg'; dataUri: string }
+  | { format: 'html'; srcdoc: string }
+  | { format: 'terminal'; frames: TerminalFrame[]; cols?: number }
+  | { format: 'image'; url: string; alt?: string }
+  | { format: 'video'; url: string };
+
+/** A generated "profile photo" for a PR, shown in the card hero. */
+export interface PRPreview {
+  kind: PreviewKind;
+  tier: PreviewTier;
+  status: PreviewStatus;
+  /** Head SHA the preview was generated against — cache key + staleness signal. */
+  headSha: string;
+  generatedAt: string; // ISO date
+  /** One-line "what you're looking at". */
+  caption?: string;
+  /** Present when status === 'ready'. */
+  artifact?: PreviewArtifact;
+}
+
 export interface PRProfile {
   id: string;
   number: number;
@@ -29,6 +78,8 @@ export interface PRProfile {
   };
   branch: string;
   baseBranch: string;
+  /** Head commit SHA — stable key for caching a generated preview. */
+  headSha: string;
   createdAt: string; // ISO date
   ageDays: number;
   draft: boolean;
@@ -47,6 +98,8 @@ export interface PRProfile {
   topFiles: FileStat[];
   /** Screenshot / screen-recording pulled from the PR description, when present. */
   media?: PRMedia;
+  /** Auto-generated, kind-aware preview shown in the hero when the author left none. */
+  preview?: PRPreview;
   /** 0-100 "match" score — how easy this PR is to say yes to. */
   matchScore: number;
   /** Learned score from past swipe decisions in the brain, when it has any. */

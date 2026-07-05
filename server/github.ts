@@ -183,6 +183,7 @@ export async function fetchOpenPRs(repo: string, token: string, limit = 15): Pro
           author: { login: detail.user.login, avatarUrl: detail.user.avatar_url },
           branch: detail.head.ref,
           baseBranch: detail.base.ref,
+          headSha: detail.head.sha,
           createdAt: detail.created_at,
           ageDays,
           draft: detail.draft,

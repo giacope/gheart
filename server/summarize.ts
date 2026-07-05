@@ -60,9 +60,9 @@ const TYPE_PATTERNS: Array<{ re: RegExp; tag: string; eli5: string }> = [
   },
 ];
 
-const UI_EXTENSIONS = /\.(css|scss|less|svg|png|jpg|jpeg|gif|webp|tsx|jsx|vue|svelte|html)$/i;
-const TEST_PATH = /(^|\/)(__tests__|tests?|spec)(\/|\.)|\.(test|spec)\.[jt]sx?$/i;
-const CONFIG_PATH = /(^|\/)(package(-lock)?\.json|yarn\.lock|pnpm-lock\.yaml|Dockerfile|\.github\/|.*\.ya?ml|.*\.toml|\.gitignore)/i;
+export const UI_EXTENSIONS = /\.(css|scss|less|svg|png|jpg|jpeg|gif|webp|tsx|jsx|vue|svelte|html)$/i;
+export const TEST_PATH = /(^|\/)(__tests__|tests?|spec)(\/|\.)|\.(test|spec)\.[jt]sx?$/i;
+export const CONFIG_PATH = /(^|\/)(package(-lock)?\.json|yarn\.lock|pnpm-lock\.yaml|Dockerfile|\.github\/|.*\.ya?ml|.*\.toml|\.gitignore)/i;
 
 function sizeWord(additions: number, deletions: number): string {
   const total = additions + deletions;
