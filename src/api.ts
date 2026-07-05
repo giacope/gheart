@@ -1,8 +1,6 @@
 import type {
   BrainSnapshot,
   PRListResponse,
-  PrecheckRequest,
-  PrecheckResponse,
   RepoListResponse,
   ReviewRequest,
   ReviewResponse,
@@ -54,8 +52,4 @@ export function undoReview(req: UndoRequest): Promise<{ ok: boolean }> {
 
 export function fetchBrain(): Promise<BrainSnapshot> {
   return request<BrainSnapshot>('/api/brain');
-}
-
-export function precheck(req: PrecheckRequest): Promise<PrecheckResponse> {
-  return post<PrecheckResponse>('/api/precheck', req);
 }

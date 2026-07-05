@@ -1,13 +1,13 @@
 # gheart — next build plan (post-P0/P1)
 
 **One-liner:** Bumble for GitHub pull requests. Agents write the code; you swipe
-to approve. Every swipe is captured into **gbrain** as structured judgment, and
-agents query that brain *before* opening the next PR.
+to approve. Every swipe is captured into **gbrain** as structured judgment.
 
-**Theme: Company Brain.** The three claims we must show on screen:
+**Theme: Company Brain.** The claims we must show on screen:
 *Capture* (the swipe is zero-schlep knowledge capture) → *Memory* (gbrain is the
-structured store) → *Execution layer* (agents pre-check against it). The plumbing
-for all three already ships; this plan makes each **visible in the demo**.
+structured store). The plumbing for both already ships; this plan makes each
+**visible in the demo**. (The agent pre-check "execution layer" was cut — the
+scripted agent never earned its keep.)
 
 ---
 
@@ -15,7 +15,7 @@ for all three already ships; this plan makes each **visible in the demo**.
 
 The swipe app, reason chips on reject, capture-on-swipe (`server/brain.ts`,
 jsonl + gbrain backends), learned `compatibility` score + citation line,
-`POST /api/precheck`, the gstack `precompute.ts` pipeline, GitHub App multi-user
+the gstack `precompute.ts` pipeline, GitHub App multi-user
 auth. `BrainStore.snapshot()` + `BrainSnapshot`/`BrainStats` types are already
 written (uncommitted) but have **no endpoint and no UI** — feature 1 finishes them.
 
@@ -52,19 +52,6 @@ fixes exactly that"*); it just isn't celebrated on the card.
 - [ ] Dry-run the exact swipe sequence so #412-reject → #414-match is one clean
       motion in the video.
 
-## 3. Agent self-correction demo, on-screen  🎯 Execution · M
-
-`/api/precheck` returns `predictedVerdict` / `memories` / `advice`, but only
-`scripts/precheck-demo.ts` (terminal) shows it. Bring it into the app.
-
-- [ ] `src/components/AgentView.tsx` — a panel that POSTs a diff summary to
-      `/api/precheck` and renders the verdict, `advice`, and cited `memories`.
-- [ ] Scripted two-step: first a diff that returns *"Likely rejected: past
-      reviews flagged no tests — fix before opening"*, then the patched diff
-      returning **approve**. The agent self-corrects before the human sees a card.
-- [ ] `src/api.ts` — `precheck(req: PrecheckRequest): Promise<PrecheckResponse>`.
-- [ ] Keep it demo-safe: canned diffs, no live model call in the request path.
-
 ## 5. Capture on approve, not just reject  🎯 Capture · S
 
 Chips fire only on reject today, so the brain's positive side is inferred, not
@@ -89,11 +76,10 @@ stated. Symmetric capture makes "match" citations specific and cheap.
 
 ## Order & cut lines
 
-Build **1 → 2 → 3**; each completes one thesis pillar visually, and all three sit
+Build **1 → 2**; each completes one thesis pillar visually, and both sit
 on plumbing that already exists (1 is half-committed). **5** is the cheap
 high-leverage add-on — slot it in wherever there's slack.
 
 - **Never cut:** the swipe feel, capture-on-swipe, and the loop-closure beat (2).
-- If 3 gets flaky live → fall back to the scripted terminal (`precheck-demo.ts`).
 - If the Brain panel (1) runs long → ship counts + top reasons only; the memory
   list is the polish, the growing count is the point.

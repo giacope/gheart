@@ -54,7 +54,7 @@ Three auth modes, picked automatically:
 | `GHEART_BRAIN_DIR` | Where the brain lives (default `server/data`). |
 | `GHEART_REVIEW_MODEL` | Model for the offline `precompute` review pass (default `claude-opus-4-8`). |
 
-## The brain 🧠 (capture → score → precheck)
+## The brain 🧠 (capture → score)
 
 Every swipe is captured into the brain as a structured `review-decision`; the
 deck reads it back before dealing:
@@ -65,12 +65,9 @@ deck reads it back before dealing:
 - **Score on load** — each card gets a learned compatibility score with a
   citation line ("You rejected #412 for having no tests — this revision fixes
   exactly that") linking the past decisions it's based on.
-- **Agent pre-check** — `POST /api/precheck` lets an agent ask the brain
-  *before* opening a PR and self-correct:
 
 ```bash
 npm run seed:brain     # loop-closure seed: pre-loads the #412 rejection
-npm run precheck:demo  # agent predicts reject → fixes the diff → predicts approve
 npm run precompute     # offline: Agent SDK reviews each demo PR → server/data/cards.json
 ```
 
