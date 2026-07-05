@@ -58,24 +58,47 @@ body {
   -webkit-text-fill-color: initial;
 }
 
-.repo-form {
-  display: flex;
-  gap: 6px;
+.repo-button {
   margin-left: auto;
-}
-
-.repo-form input {
   background: var(--card);
   border: 1px solid #2e2e40;
   color: var(--text);
   border-radius: 10px;
   padding: 7px 12px;
   font-size: 13px;
-  width: 200px;
   font-family: ui-monospace, monospace;
+  cursor: pointer;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.repo-form button,
+.repo-button:hover {
+  border-color: var(--green);
+}
+
+.repo-caret {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.brain-button {
+  background: var(--card);
+  border: 1px solid #2e2e40;
+  color: var(--text);
+  border-radius: 10px;
+  padding: 7px 12px;
+  font-size: 13px;
+  font-family: ui-monospace, monospace;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.brain-button:hover {
+  border-color: var(--green);
+}
+
 .restart {
   background: var(--green);
   color: #06281a;
@@ -88,6 +111,7 @@ body {
 }
 
 .demo-badge {
+  text-decoration: none;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -196,6 +220,96 @@ body {
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+/* The preview is decorative — let the swipe drag pass through to the card. */
+.hero-media,
+.hero-frame,
+.hero-terminal {
+  pointer-events: none;
+}
+
+.hero-frame {
+  border: 0;
+  object-fit: fill;
+  background: var(--card-2);
+}
+
+/* ---- generated terminal (CLI) preview ---- */
+.hero-terminal {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  padding: 12px 14px;
+  background: linear-gradient(180deg, #0b0b12, #14141d);
+  font: 12.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--muted);
+}
+.term-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.term-line {
+  white-space: pre;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.term-cmd {
+  color: var(--text);
+}
+.term-prompt {
+  color: var(--green);
+  font-weight: 700;
+}
+.term-ok {
+  color: var(--green);
+}
+.term-err {
+  color: var(--red);
+}
+.term-note {
+  color: var(--blue);
+}
+.term-cursor {
+  display: inline-block;
+  width: 7px;
+  height: 14px;
+  margin-left: 1px;
+  vertical-align: text-bottom;
+  background: var(--green);
+  animation: term-blink 1s steps(1) infinite;
+}
+@keyframes term-blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ---- shimmer while a live preview is still generating ---- */
+.hero-shimmer {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: linear-gradient(100deg, var(--card-2) 28%, #2c2c40 50%, var(--card-2) 72%);
+  background-size: 220% 100%;
+  animation: hero-shimmer 1.4s linear infinite;
+}
+@keyframes hero-shimmer {
+  to {
+    background-position: -220% 0;
+  }
+}
+.shimmer-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
 }
 
 .hero-fallback {
@@ -522,6 +636,141 @@ em.del {
   color: var(--muted);
 }
 
+/* ---------- swipe history (recent swipes drawer) ---------- */
+.swipe-history {
+  width: min(430px, 94vw);
+  flex: none;
+  margin-top: 10px;
+  background: var(--card);
+  border: 1px solid #2b2b3c;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.swipe-history.open {
+  border-color: #3a3a52;
+}
+
+.swipe-history-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  color: var(--text);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.swipe-history-title {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.swipe-history-tally {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.sh-tally.approve {
+  color: var(--green);
+}
+
+.sh-tally.reject {
+  color: var(--red);
+}
+
+.swipe-history-caret {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.swipe-history-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 8px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 210px;
+  overflow-y: auto;
+  border-top: 1px solid #23232f;
+}
+
+.swipe-history-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px;
+  border-radius: 10px;
+  border-left: 3px solid #3a3a52;
+  background: var(--card-2);
+}
+
+.swipe-history-item.approve {
+  border-left-color: var(--green);
+}
+
+.swipe-history-item.reject {
+  border-left-color: var(--red);
+}
+
+.swipe-history-item.skip {
+  border-left-color: var(--blue);
+}
+
+.sh-verdict {
+  font-size: 15px;
+  flex: none;
+}
+
+.sh-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.sh-pr {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sh-pr code {
+  color: var(--muted);
+}
+
+.sh-meta {
+  font-size: 11px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sh-link {
+  flex: none;
+  font-size: 12px;
+  color: var(--blue);
+  text-decoration: none;
+  border: 1px solid #30304a;
+  border-radius: 999px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+
+.sh-link:hover {
+  border-color: var(--blue);
+}
+
 /* ---------- loading / empty / error ---------- */
 .loading,
 .empty-deck {
@@ -650,6 +899,456 @@ em.del {
   }
 }
 
+/* ---------- brain row (learned compatibility) ---------- */
+.brain-row {
+  border: 1px solid #3a3a52;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin: 10px 0 2px;
+  background: var(--card-2);
+}
+
+.brain-row.match {
+  border-color: rgba(53, 208, 127, 0.55);
+  box-shadow: 0 0 14px rgba(53, 208, 127, 0.12) inset;
+}
+
+.brain-row.pass {
+  border-color: rgba(255, 88, 100, 0.55);
+  box-shadow: 0 0 14px rgba(255, 88, 100, 0.12) inset;
+}
+
+.brain-score {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.brain-row.match .brain-score {
+  color: var(--green);
+}
+
+.brain-row.maybe .brain-score {
+  color: var(--amber);
+}
+
+.brain-row.pass .brain-score {
+  color: var(--red);
+}
+
+.brain-why {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #cfcfe0;
+}
+
+.brain-citations {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.brain-cite {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid #3a3a52;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.brain-cite:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+/* ---------- brain panel (the Company Brain, made visible) ---------- */
+.brain-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 8, 14, 0.72);
+  backdrop-filter: blur(6px);
+  display: flex;
+  justify-content: flex-end;
+  z-index: 110;
+  animation: fadein 160ms ease;
+}
+
+.brain-panel {
+  width: min(460px, 100vw);
+  height: 100%;
+  background: var(--bg);
+  border-left: 1px solid #2e2e40;
+  display: flex;
+  flex-direction: column;
+  animation: brain-slide 240ms cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+@keyframes brain-slide {
+  from {
+    transform: translateX(24px);
+    opacity: 0.4;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.brain-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid #23232f;
+}
+
+.brain-panel-head h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.brain-panel-head-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.brain-refresh,
+.brain-panel-close {
+  background: var(--card);
+  border: 1px solid #2e2e40;
+  color: var(--muted);
+  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.brain-refresh:hover,
+.brain-panel-close:hover {
+  border-color: var(--green);
+  color: var(--text);
+}
+
+.brain-refresh:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.brain-stats {
+  display: flex;
+  gap: 10px;
+  padding: 14px 18px 6px;
+}
+
+.brain-stat {
+  flex: 1;
+  background: var(--card);
+  border: 1px solid #23232f;
+  border-radius: 12px;
+  padding: 10px 8px;
+  text-align: center;
+}
+
+.brain-stat-num {
+  display: block;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.brain-approve {
+  color: var(--green);
+}
+
+.brain-reject {
+  color: var(--red);
+}
+
+.brain-stat-label {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.brain-top-reasons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px 4px;
+}
+
+.brain-top-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.brain-reason-tally {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid #3a3a52;
+  color: #cfcfe0;
+}
+
+.brain-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 18px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Tabs: all-time memories vs. this session's swipes. */
+.brain-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 12px 18px 0;
+}
+
+.brain-tab {
+  flex: 1;
+  background: var(--card);
+  border: 1px solid #23232f;
+  color: var(--muted);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.brain-tab:hover {
+  color: var(--text);
+}
+
+.brain-tab.active {
+  border-color: var(--green);
+  color: var(--text);
+  background: var(--card-2);
+}
+
+.brain-tab-count {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+/* The session tab reuses the drawer's rows, but fills the panel instead of the
+   drawer's short capped list. */
+.brain-session .swipe-history-list {
+  max-height: none;
+  overflow: visible;
+  border-top: none;
+  padding: 0;
+}
+
+.brain-panel-msg {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 12px 2px;
+}
+
+.brain-memory {
+  background: var(--card);
+  border: 1px solid #23232f;
+  border-left: 3px solid #3a3a52;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.brain-memory.approve {
+  border-left-color: var(--green);
+}
+
+.brain-memory.reject {
+  border-left-color: var(--red);
+}
+
+.brain-memory-top {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.brain-memory-verdict {
+  font-size: 14px;
+}
+
+.brain-memory-title {
+  flex: 1;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.brain-memory-title:hover {
+  color: var(--blue);
+}
+
+.brain-memory-ago {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.brain-memory-reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.brain-memory-reason {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(255, 88, 100, 0.12);
+  border: 1px solid rgba(255, 88, 100, 0.4);
+  color: #ffc2c7;
+}
+
+.brain-memory-fp {
+  margin-top: 7px;
+  font-size: 12px;
+  color: var(--muted);
+  font-family: ui-monospace, monospace;
+}
+
+.brain-memory-cited {
+  margin-top: 7px;
+  font-size: 12px;
+  color: var(--blue);
+}
+
+/* ---------- review flags (gstack findings) ---------- */
+.flag-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.flag {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.flag.green {
+  color: #bfe9d3;
+}
+
+.flag.red {
+  color: #ffc2c7;
+}
+
+/* ---------- reason chips (reject reasons overlay) ---------- */
+.reason-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 6, 10, 0.82);
+  backdrop-filter: blur(6px);
+  display: grid;
+  place-items: center;
+  z-index: 100;
+  animation: fadein 180ms ease;
+}
+
+.reason-inner {
+  background: var(--card);
+  border: 1px solid #3a3a52;
+  border-radius: var(--radius);
+  padding: 24px;
+  max-width: 420px;
+  width: calc(100vw - 40px);
+  text-align: center;
+  animation: pop 320ms cubic-bezier(0.2, 1.6, 0.4, 1);
+}
+
+.reason-inner h2 {
+  margin: 0 0 4px;
+}
+
+.reason-sub {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 0 0 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reason-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.reason-chip {
+  background: var(--card-2);
+  border: 1px solid #3a3a52;
+  color: var(--text);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 80ms ease, border-color 120ms ease;
+}
+
+.reason-chip:hover {
+  transform: scale(1.04);
+}
+
+.reason-chip.on {
+  border-color: var(--red);
+  color: var(--red);
+  box-shadow: 0 0 14px rgba(255, 88, 100, 0.2);
+}
+
+.reason-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.reason-skip {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.reason-send {
+  background: var(--red);
+  border: none;
+  color: #fff;
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.reason-send:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* ---------- toast ---------- */
 .toast {
   position: fixed;
@@ -668,14 +1367,486 @@ em.del {
   max-width: 90vw;
 }
 
+/* ---------- user chip ---------- */
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--card);
+  border: 1px solid #2e2e40;
+  border-radius: 999px;
+  padding: 4px 10px 4px 4px;
+}
+
+.user-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+}
+
+.user-login {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.logout {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.logout:hover {
+  color: var(--red);
+}
+
+/* ---------- login screen ---------- */
+.login-screen {
+  margin: auto;
+  text-align: center;
+  max-width: 420px;
+  padding: 24px;
+}
+
+.login-heart {
+  font-size: 72px;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.login-screen h1 {
+  font-size: 44px;
+  margin: 8px 0 10px;
+  background: linear-gradient(90deg, #35d07f, #58e6a8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.login-screen p {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.github-login {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0 8px;
+  background: var(--green);
+  color: #06281a;
+  border-radius: 12px;
+  padding: 12px 22px;
+  font-weight: 800;
+  font-size: 15px;
+  text-decoration: none;
+  transition: transform 120ms ease;
+}
+
+.github-login:hover {
+  transform: scale(1.04);
+}
+
+.login-fineprint {
+  font-size: 12px;
+}
+
+.login-fineprint code {
+  color: #bdbdd6;
+}
+
+/* ---------- repo picker ---------- */
+.repo-picker {
+  width: min(560px, 94vw);
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--card);
+  border: 1px solid #2b2b3c;
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+}
+
+.repo-picker-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.repo-picker-head h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.repo-picker-close {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.repo-picker input {
+  width: 100%;
+  background: var(--card-2);
+  border: 1px solid #2e2e40;
+  color: var(--text);
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-family: ui-monospace, monospace;
+}
+
+.repo-picker-loading {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 4px 0;
+}
+
+.repo-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.repo-item {
+  width: 100%;
+  text-align: left;
+  background: var(--card-2);
+  border: 1px solid #30304a;
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.repo-item:hover {
+  border-color: var(--green);
+}
+
+.repo-item.current {
+  border-color: var(--green);
+  box-shadow: 0 0 12px rgba(53, 208, 127, 0.2);
+}
+
+.repo-name {
+  font-family: ui-monospace, monospace;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.repo-private {
+  margin-left: 8px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--amber);
+  border: 1px solid var(--amber);
+  border-radius: 999px;
+  padding: 1px 7px;
+}
+
+.repo-desc {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.repo-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.install-cta {
+  display: inline-block;
+  background: var(--green);
+  color: #06281a;
+  border-radius: 12px;
+  padding: 12px 22px;
+  font-weight: 800;
+  font-size: 15px;
+  text-decoration: none;
+  align-self: center;
+  margin: 8px 0;
+}
+
+.install-link {
+  font-size: 12px;
+  color: var(--blue);
+  text-decoration: none;
+  text-align: center;
+  padding-top: 4px;
+}
+
 @media (max-width: 520px) {
-  .repo-form input {
-    width: 130px;
+  .repo-button {
+    max-width: 150px;
+  }
+
+  .user-login {
+    display: none;
   }
 
   .stamp {
     font-size: 22px;
   }
+}
+
+/* ── feature: loop-closure ribbon ── */
+/* Celebrates a PR that fixes every reason a past PR was rejected for:
+   reject → memory → the fixed revision arrives. Sits at the top of .brain-row,
+   borrowing the green of .match-fill.good and the .brain-row.match glow. */
+.loop-ribbon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #06120b;
+  background: linear-gradient(90deg, #1fa864, var(--green));
+  border-radius: 999px;
+  box-shadow:
+    0 2px 10px rgba(53, 208, 127, 0.4),
+    0 0 0 1px rgba(53, 208, 127, 0.55) inset;
+  animation: loop-ribbon-pop 420ms cubic-bezier(0.2, 0.9, 0.3, 1.4);
+}
+
+@keyframes loop-ribbon-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.82) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ── feature: approve capture ── */
+.reason-overlay.approve {
+  background: rgba(6, 20, 13, 0.82);
+}
+
+.reason-overlay.approve .reason-chip.on {
+  border-color: var(--green);
+  color: var(--green);
+  box-shadow: 0 0 14px rgba(53, 208, 127, 0.2);
+}
+
+.reason-overlay.approve .reason-send {
+  background: var(--green);
+  color: #06281a;
+}
+
+/* ── feature: agent view ── */
+.agent-button {
+  background: var(--card);
+  border: 1px solid #2e2e40;
+  color: var(--text);
+  border-radius: 10px;
+  padding: 7px 12px;
+  font-size: 13px;
+  font-family: ui-monospace, monospace;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.agent-button:hover {
+  border-color: var(--blue);
+}
+
+/* The panel reuses .brain-panel; the body is an agent's-eye-view terminal. */
+.agent-console {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 18px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-family: ui-monospace, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.agent-line {
+  margin: 0;
+  color: #cfcfe0;
+}
+
+.agent-prompt {
+  color: var(--green);
+  font-weight: 700;
+  margin-right: 4px;
+}
+
+.agent-final {
+  color: #bfe9d3;
+}
+
+.agent-waiting {
+  margin: 0;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.agent-error {
+  margin: 0;
+}
+
+.agent-draft {
+  background: var(--card);
+  border: 1px solid #23232f;
+  border-left: 3px solid var(--amber);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.agent-draft-title {
+  font-weight: 700;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.agent-draft-summary {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.agent-result {
+  background: var(--card);
+  border: 1px solid #23232f;
+  border-left: 3px solid #3a3a52;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.agent-result.reject {
+  border-left-color: var(--red);
+}
+
+.agent-result.approve {
+  border-left-color: var(--green);
+}
+
+.agent-result-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.agent-result-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--muted);
+}
+
+.agent-verdict {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-weight: 700;
+  text-align: right;
+}
+
+.agent-verdict.reject {
+  color: var(--red);
+}
+
+.agent-verdict.approve {
+  color: var(--green);
+}
+
+.agent-verdict.unknown {
+  color: var(--muted);
+}
+
+.agent-confidence {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.agent-memories {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.agent-memory {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.agent-memory-verdict {
+  flex: none;
+}
+
+.agent-memory-link {
+  color: #cfcfe0;
+  text-decoration: none;
+  font-size: 12px;
+}
+
+.agent-memory-link:hover {
+  color: var(--blue);
+}
+
+.agent-advice {
+  margin: 10px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid #23232f;
+  color: #d4d4e6;
+  font-size: 12px;
+}
+
+.agent-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.agent-retry {
+  align-self: flex-start;
+  background: var(--card-2);
+  border: 1px solid var(--amber);
+  color: var(--amber);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-family: ui-monospace, monospace;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 80ms ease;
+}
+
+.agent-retry:hover:not(:disabled) {
+  transform: scale(1.04);
+}
+
+.agent-retry:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 /* ── mobile PWA additions ─────────────────────────────────────────────── */

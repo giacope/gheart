@@ -1,4 +1,5 @@
 import type { CiState, PRProfile } from '../../shared/types';
+import CardPreview from './CardPreview';
 
 const CI_BADGE: Record<CiState, { icon: string; label: string; cls: string }> = {
   passing: { icon: '✓', label: 'CI passing', cls: 'ci-passing' },
@@ -36,18 +37,7 @@ export default function PRCard({ pr }: { pr: PRProfile }) {
   return (
     <article className="pr-card">
       <div className="card-hero">
-        {pr.media ? (
-          pr.media.type === 'video' ? (
-            <video src={pr.media.url} autoPlay muted loop playsInline className="hero-media" />
-          ) : (
-            <img src={pr.media.url} alt={pr.media.alt ?? 'UI change preview'} className="hero-media" />
-          )
-        ) : (
-          <div className="hero-fallback" aria-hidden>
-            <span className="hero-emoji">{bannerEmoji(pr)}</span>
-          </div>
-        )}
-        {pr.media && <span className="clip-badge">▶ UI preview</span>}
+        <CardPreview pr={pr} fallbackEmoji={bannerEmoji(pr)} />
         <div className="hero-shade" />
         <div className="hero-title">
           <h2>
@@ -78,6 +68,57 @@ export default function PRCard({ pr }: { pr: PRProfile }) {
             {pr.matchScore}% mergeable — {scoreLabel(pr.matchScore)}
           </span>
         </div>
+
+        {pr.compatibility && (
+          <div className={`brain-row ${pr.compatibility.verdict}`}>
+            {pr.compatibility.closesLoop && (
+              <div className="loop-ribbon">↩ back — and it listened</div>
+            )}
+            <div className="brain-score">
+              🧠 {pr.compatibility.score}%{' '}
+              {pr.compatibility.verdict === 'match'
+                ? 'your type'
+                : pr.compatibility.verdict === 'maybe'
+                  ? 'maybe your type'
+                  : 'not your type'}
+            </div>
+            <p className="brain-why">{pr.compatibility.why}</p>
+            {pr.compatibility.citations.length > 0 && (
+              <div className="brain-citations">
+                {pr.compatibility.citations.map((c) => (
+                  <a
+                    key={c.pr}
+                    href={c.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={`brain-cite ${c.verdict}`}
+                    onPointerDown={(e) => e.stopPropagation()}
+                  >
+                    {c.verdict === 'approve' ? '💚' : '💔'} #{c.pr}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {(pr.greenFlags?.length || pr.redFlags?.length) ? (
+          <section>
+            <h3>Flags</h3>
+            <ul className="flag-list">
+              {pr.greenFlags?.map((f) => (
+                <li key={f} className="flag green">
+                  <span aria-hidden>🟢</span> {f}
+                </li>
+              ))}
+              {pr.redFlags?.map((f) => (
+                <li key={f} className="flag red">
+                  <span aria-hidden>🚩</span> {f}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
 
         <div className="stat-chips">
           <span className="chip add">+{pr.stats.additions.toLocaleString()}</span>

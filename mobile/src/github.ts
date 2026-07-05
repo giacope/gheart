@@ -1,5 +1,6 @@
 import type { CiState, FileStat, PRProfile, SwipeVerdict } from '../shared/types';
 import { extractMedia } from './media';
+import { attachPreview } from './preview/generate';
 import { matchScore, summarize } from './summarize';
 
 // Browser build: talk to the GitHub REST API directly (it sends CORS headers),
@@ -97,7 +98,7 @@ export async function fetchOpenPRs(repo: string, token: string, limit = 15): Pro
           Math.floor((Date.now() - new Date(detail.created_at).getTime()) / 86_400_000),
         );
 
-        return {
+        const profile: PRProfile = {
           id: `${repo}#${detail.number}`,
           number: detail.number,
           repo,
@@ -106,6 +107,7 @@ export async function fetchOpenPRs(repo: string, token: string, limit = 15): Pro
           author: { login: detail.user.login, avatarUrl: detail.user.avatar_url },
           branch: detail.head.ref,
           baseBranch: detail.base.ref,
+          headSha: detail.head.sha,
           createdAt: detail.created_at,
           ageDays,
           draft: detail.draft,
@@ -127,6 +129,8 @@ export async function fetchOpenPRs(repo: string, token: string, limit = 15): Pro
           media: extractMedia(detail.body),
           matchScore: matchScore(summaryInput),
         };
+        attachPreview(profile, new Date().toISOString());
+        return profile;
       } catch (err) {
         console.error(`gheart: skipping ${repo}#${raw.number}:`, err);
         return null;
