@@ -4,7 +4,6 @@ import { fetchPRs, fetchSession, logout, sendReview, undoReview } from './api';
 import ActionBar from './components/ActionBar';
 import BrainPanel from './components/BrainPanel';
 import EmptyDeck from './components/EmptyDeck';
-import LandingPage from './components/LandingPage';
 import LoginScreen from './components/LoginScreen';
 import MatchOverlay from './components/MatchOverlay';
 import ReasonChips from './components/ReasonChips';
@@ -34,7 +33,6 @@ export default function App() {
   } | null>(null);
   const [brainOpen, setBrainOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
-  const [entered, setEntered] = useState(false);
   const deck = useRef<SwipeDeckHandle>(null);
   const toastTimer = useRef<number>();
 
@@ -199,11 +197,6 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey);
   }, [match, loading, picking, pendingReject, pendingApprove, handleUndo]);
 
-  // ---- landing gate ----
-  if (!entered) {
-    return <LandingPage onEnter={() => setEntered(true)} />;
-  }
-
   // ---- pre-auth states ----
   if (sessionError) {
     return (
@@ -246,9 +239,9 @@ export default function App() {
   return (
     <div className="app">
       <header className="topbar">
-        <button className="logo logo-button" onClick={() => setEntered(false)} title="Back to gheart">
+        <div className="logo">
           <span className="logo-heart">💚</span> gheart
-        </button>
+        </div>
         <button className="repo-button" onClick={() => setPicking(true)} title="Switch repo">
           {repo || 'pick a repo'} <span className="repo-caret">▾</span>
         </button>
