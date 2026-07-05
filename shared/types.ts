@@ -111,7 +111,8 @@ export interface PRProfile {
   fingerprint?: PRFingerprint;
 }
 
-export type SwipeVerdict = 'approve' | 'reject' | 'skip';
+/** 'superlike' is the strongest possible yes — max brain weight, still an APPROVE on GitHub. */
+export type SwipeVerdict = 'approve' | 'reject' | 'skip' | 'superlike';
 
 /** How the server is authenticating against GitHub. */
 export type AuthMode = 'app' | 'token' | 'demo';
@@ -249,6 +250,8 @@ export interface BrainStats {
   total: number;
   approved: number;
   rejected: number;
+  /** How many of `approved` were superlikes — the strongest possible signal. */
+  superliked: number;
   /** Rejection reasons across all memories, most frequent first. */
   topReasons: { reason: string; count: number }[];
 }

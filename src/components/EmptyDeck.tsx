@@ -7,12 +7,15 @@ interface Props {
 
 const VERDICT_ICON: Record<SwipeVerdict, string> = {
   approve: '💚',
+  superlike: '⭐',
   reject: '💔',
   skip: '🙈',
 };
 
 export default function EmptyDeck({ history, onRestart }: Props) {
-  const approved = history.filter((h) => h.verdict === 'approve').length;
+  const approved = history.filter(
+    (h) => h.verdict === 'approve' || h.verdict === 'superlike',
+  ).length;
   const rejected = history.filter((h) => h.verdict === 'reject').length;
   const skipped = history.filter((h) => h.verdict === 'skip').length;
 

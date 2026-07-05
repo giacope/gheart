@@ -8,6 +8,7 @@
   --red: #ff5864;
   --blue: #58a6ff;
   --amber: #ffcf33;
+  --super: #b388ff;
   --radius: 18px;
   color-scheme: dark;
 }
@@ -1804,4 +1805,53 @@ em.del {
 .agent-retry:disabled {
   opacity: 0.5;
   cursor: default;
+}
+
+/* ── feature: super swipe ── */
+.action.super {
+  color: var(--super);
+  border-color: var(--super);
+  box-shadow: 0 0 18px rgba(179, 136, 255, 0.35);
+}
+
+.stamp.super {
+  left: 50%;
+  top: 44%;
+  color: var(--super);
+  border-color: var(--super);
+  transform: translateX(-50%) rotate(-6deg);
+}
+
+.match-overlay.super {
+  background: rgba(20, 12, 33, 0.85);
+}
+
+.match-overlay.super .match-inner h2 {
+  background: linear-gradient(90deg, var(--super), #ecdcff);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.reason-overlay.superlike .reason-chip.on {
+  border-color: var(--super);
+  color: var(--super);
+  box-shadow: 0 0 14px rgba(179, 136, 255, 0.3);
+}
+
+.reason-overlay.superlike .reason-send {
+  background: var(--super);
+  color: #1c0f33;
+}
+
+.sh-tally.superlike,
+.brain-stat-num.brain-superlike {
+  color: var(--super);
+}
+
+.swipe-history-item.superlike .sh-verdict {
+  filter: drop-shadow(0 0 4px rgba(179, 136, 255, 0.6));
+}
+
+.brain-memory.superlike {
+  border-left-color: var(--super);
 }

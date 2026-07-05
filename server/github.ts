@@ -227,9 +227,11 @@ export async function submitReview(
 
   const body =
     comment ??
-    (verdict === 'approve'
-      ? 'Approved via gheart 💚 (swiped right)'
-      : 'Requesting changes via gheart 💔 (swiped left)');
+    (verdict === 'superlike'
+      ? 'Super approved via gheart ⭐💚 (instant yes)'
+      : verdict === 'approve'
+        ? 'Approved via gheart 💚 (swiped right)'
+        : 'Requesting changes via gheart 💔 (swiped left)');
 
   // GitHub forbids approving or requesting changes on your own PR (422). When
   // we can see it's a self-match up front, skip straight to a COMMENT review —
@@ -237,7 +239,8 @@ export async function submitReview(
   // let you cast on yourself.
   const ownPR =
     !!opts.viewerLogin && !!opts.authorLogin && opts.viewerLogin === opts.authorLogin;
-  const wanted = verdict === 'approve' ? 'APPROVE' : 'REQUEST_CHANGES';
+  // GitHub has no "super approve" — a superlike still lands as a plain APPROVE.
+  const wanted = verdict === 'approve' || verdict === 'superlike' ? 'APPROVE' : 'REQUEST_CHANGES';
 
   const post = (event: string) =>
     fetch(`${API}/repos/${repo}/pulls/${number}/reviews`, {

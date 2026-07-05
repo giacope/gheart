@@ -105,7 +105,9 @@ const SwipeDeck = forwardRef<SwipeDeckHandle, Props>(function SwipeDeck({ prs, o
         ? 'translate(-120vw, -8vh) rotate(-24deg)'
         : flying === 'skip'
           ? 'translate(0, -120vh) rotate(0deg)'
-          : null;
+          : flying === 'superlike'
+            ? 'translate(0, -130vh) scale(1.15) rotate(0deg)'
+            : null;
 
   const style: React.CSSProperties = {
     transform: flyTransform ?? `translate(${dx}px, ${dy}px) rotate(${dx * 0.055}deg)`,
@@ -117,6 +119,8 @@ const SwipeDeck = forwardRef<SwipeDeckHandle, Props>(function SwipeDeck({ prs, o
   const nopeOpacity = flying === 'reject' ? 1 : Math.min(1, Math.max(0, -dx / SWIPE_THRESHOLD));
   const skipOpacity =
     flying === 'skip' ? 1 : Math.min(1, Math.max(0, -dy / SKIP_THRESHOLD)) * (Math.abs(dx) < 40 ? 1 : 0);
+  // Superlike is button/keyboard-only (no drag gesture), so it's just on or off.
+  const superOpacity = flying === 'superlike' ? 1 : 0;
 
   return (
     <div className="deck">
@@ -142,6 +146,9 @@ const SwipeDeck = forwardRef<SwipeDeckHandle, Props>(function SwipeDeck({ prs, o
                 </span>
                 <span className="stamp skip" style={{ opacity: skipOpacity }}>
                   SKIP
+                </span>
+                <span className="stamp super" style={{ opacity: superOpacity }}>
+                  ⭐ SUPER
                 </span>
                 <PRCard pr={pr} />
               </div>

@@ -193,7 +193,10 @@ function compatibilityFromMatches(matches: Match[]): Compatibility | null {
   let score = 50;
   for (const [rank, m] of matches.entries()) {
     const weight = m.sim * [1, 0.6, 0.35][rank];
-    if (m.decision.verdict === 'approve') {
+    if (m.decision.verdict === 'superlike') {
+      // The strongest possible past signal — weighted well above a plain approve.
+      score += 65 * weight;
+    } else if (m.decision.verdict === 'approve') {
       score += 42 * weight;
     } else if (m.addressed.length > 0 && m.outstanding.length === 0) {
       // Rejected before, but this PR fixes every named reason — strong positive.
@@ -212,7 +215,9 @@ function compatibilityFromMatches(matches: Match[]): Compatibility | null {
   const closesLoop =
     top.decision.verdict === 'reject' && top.addressed.length > 0 && top.outstanding.length === 0;
   let why: string;
-  if (d.verdict === 'approve') {
+  if (d.verdict === 'superlike') {
+    why = `You superliked #${d.pr} (${d.reasons.length ? describeReasons(d.reasons) : describeReasons(d.fingerprint.tags.slice(0, 2))}) — an instant yes last time.`;
+  } else if (d.verdict === 'approve') {
     why = `You approved #${d.pr} (${d.reasons.length ? describeReasons(d.reasons) : describeReasons(d.fingerprint.tags.slice(0, 2))}) — this looks like more of the same.`;
   } else if (top.addressed.length > 0 && top.outstanding.length === 0) {
     why = `You rejected #${d.pr} for ${describeReasons(d.reasons)} — this revision fixes exactly that.`;
@@ -252,8 +257,9 @@ function snapshotFromDecisions(decisions: DecisionRecord[]): BrainSnapshot {
   return {
     stats: {
       total: decisions.length,
-      approved: decisions.filter((d) => d.verdict === 'approve').length,
+      approved: decisions.filter((d) => d.verdict === 'approve' || d.verdict === 'superlike').length,
       rejected: decisions.filter((d) => d.verdict === 'reject').length,
+      superliked: decisions.filter((d) => d.verdict === 'superlike').length,
       topReasons,
     },
     memories,
@@ -361,7 +367,7 @@ function decisionPage(d: DecisionRecord): string {
     `url: ${d.url}`,
     '---',
     '',
-    `${d.verdict === 'approve' ? 'Approved' : 'Rejected'} #${d.pr} (${d.title}).` +
+    `${d.verdict === 'superlike' ? 'Super approved' : d.verdict === 'approve' ? 'Approved' : 'Rejected'} #${d.pr} (${d.title}).` +
       (d.reasons.length ? ` Reasons: ${describeReasons(d.reasons)}.` : ''),
     '',
     d.tldr,
