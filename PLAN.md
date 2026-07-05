@@ -1,167 +1,208 @@
-# gheart — hackathon plan (YC RFS Summer 2026)
+# gheart — build plan (YC RFS Summer 2026)
 
-**One-liner:** Bumble for GitHub pull requests. Agents write the code; you
-swipe to approve. Every swipe becomes a memory in your company brain, so the
-agents learn your taste and stop showing you PRs you'd reject.
+**One-liner:** Bumble for GitHub pull requests. Agents write the code; you swipe
+to approve. Every swipe is captured into **gbrain** as structured judgment, and
+agents query that brain *before* opening the next PR — so the deck learns your
+taste and stops showing you PRs you'd reject.
 
-**The line that sells it:** Garry gave agents hands (gstack) and a brain
-(gbrain). gheart gives them a heart — taste, judgment, and the rule that
-**humans make the first move**.
+**Theme: Company Brain** (Tom Blomfield). The swipe is zero-schlep knowledge
+capture; gbrain is the structured store; the agent pre-check endpoint is the
+"execution layer for AI." Positioning: *gstack gave agents hands, gbrain gave
+them memory, gheart gives them taste — and humans make the first move.*
 
-## Theme: Company Brain
+---
 
-Submitted under **Company Brain** (Tom Blomfield): "structure and update
-fragmented internal knowledge and convert it into an execution layer for AI."
+## 1. Where the prototype is now (what already exists on `main`)
 
-The pitch mapping is exact:
+A genuinely polished **L0 swipe app** — but with **zero memory and no gstack/gbrain**.
 
-- **Fragmented internal knowledge** = engineering judgment. Why PRs get
-  rejected lives in review comments, Slack threads, and senior engineers'
-  heads. It evaporates. Nobody writes it down because writing it down is a
-  schlep (paulgraham.com/schlep.html — keep the opener from the old plan).
-- **Structure and update** = the swipe. A swipe left with a reason chip is the
-  lowest-friction knowledge capture ever invented. Each one is written to
-  gbrain as a typed page (verdict, reasons, diff fingerprint, PR link).
-- **Execution layer for AI** = agents query gbrain *before* opening a PR.
-  "Would this get swiped left?" is an API call. The brain isn't a wiki — it
-  gates and shapes agent work.
+- **Frontend (`src/`)** — React + Vite. `SwipeDeck.tsx` hand-rolls pointer
+  swipe physics (approve/reject/skip), `PRCard.tsx` renders the profile (hero
+  media, match bar, stat chips, TL;DR, ELI5, tags, top files), `MatchOverlay`,
+  `ActionBar`, keyboard shortcuts + undo. Looks like a dating app already.
+- **Backend (`server/`)** — Express. `GET /api/prs` lists+enriches open PRs
+  (`github.ts`), `POST /api/review` submits APPROVE/REQUEST_CHANGES. `summarize.ts`
+  makes **one Haiku call** for tldr/eli5 with a heuristic fallback. `matchScore`
+  is a **static heuristic** (size + CI + tests). `mock.ts` has 9 hand-written
+  demo PRs for offline mode.
+- **Shared (`shared/types.ts`)** — `PRProfile`, `SwipeVerdict`, review req/resp.
 
-The other two themes appear as demonstrated properties, not the submission:
-*Dynamic Software Interfaces* (code review reimagined as a card stack, cards
-composed per-viewer by agents) and *Software for Agents* (gheart's pre-check
-MCP endpoint is agent-first: machine-readable verdicts, not human prose).
+**The gap = the whole thesis.** Today a swipe hits the GitHub API and vanishes.
+Nothing is captured, nothing is learned, the score isn't informed by history,
+the "green/red flags" aren't real review findings, and neither gstack nor gbrain
+is wired in. The re-plan closes exactly that gap.
 
-## The metaphor, played completely straight
-
-| Bumble | gheart |
-|---|---|
-| Profile card | PR card: title, author avatar, age, diff stats |
-| Bio | gstack-generated summary (what it does, in two sentences) |
-| Green flags / red flags | gstack `/review` + `/cso` findings, distilled |
-| Compatibility score | gbrain: does this match our past decisions? cites them |
-| Swipe right | approve (GitHub review APPROVE) |
-| Swipe left | request changes + reason chips → gbrain memory |
-| Super like | approve + merge queue (gstack `/ship`) |
-| "Women message first" | **Humans make the first move.** No agent merges until a human likes it. |
-| It's a match! | your swipe agrees with the agent reviewers' verdict → auto-merge |
-| Ghosting | stale agent PRs auto-close after N days unswiped |
-
-Reason chips on swipe-left (tap 1–2, or dictate one sentence): *too big ·
-no tests · touches auth · wrong layer · duplicate · vibe is off*. The chip is
-the knowledge. This is why capture actually happens: rejecting a PR takes two
-seconds and produces structured data as a side effect.
-
-## The flywheel (this is the demo arc)
-
-1. Agent PRs flood in (seeded from the gheart-eval corpus).
-2. You swipe through 10 in 60 seconds. Left-swipes carry reasons.
-3. Each swipe → `gbrain capture` (typed page: decision, with frontmatter).
-4. Next agent, before opening a PR, hits gheart's pre-check endpoint →
-   `gbrain think` → "you rejected a schema drop without rollback on C002;
-   include a down-migration." The PR arrives already conforming, **citing the
-   memory that shaped it**.
-5. Compatibility scores rise over the session. Fewer left-swipes. The brain
-   is visibly compounding — that's the Company Brain money shot.
-
-## Architecture
+## 2. Target architecture
 
 ```
-GitHub PRs ──▶ profile pipeline ──▶ card store ──▶ swipe UI (the demo)
-              (gstack /review,        (JSON)          │
-               /cso via headless                      ▼ swipe events
-               Claude Code)                    GitHub review API
-                                                      │
-                                                      ▼
-                                              gbrain capture (typed pages)
-                                                      ▲
-agents (pre-check MCP/API) ── gbrain think ───────────┘
+OFFLINE (before the demo) ─ scripts/precompute.ts
+  demo PRs ─▶ Claude Agent SDK runs gstack /review + /cso ─▶ green/red flags, risk
+                    │  (Opus 4.8, ~10–30s/PR — never in request path)
+                    ├─▶ gbrain: seed prior decisions (loop-closure demo)
+                    └─▶ writes cards.json  ─────────────────────────────┐
+                                                                        │
+LIVE (fast) ─ Express server                                            ▼
+  GET  /api/prs      cards.json (or GitHub) + per-card compatibility  ◀─ gbrain search
+  POST /api/review   GitHub review  +  gbrain capture(decision + chips) ─▶ gbrain
+  POST /api/precheck  agent posts a diff → gbrain think → verdict+memories (agent-facing)
+                                                                        ▲
+  agents (before opening a PR) ───────────────────────────────────────┘
 ```
 
-- **Swipe UI** — single-page card stack, mobile-feel, pointer/touch drag with
-  spring physics. This is the centerpiece; it must feel like a dating app,
-  not a dashboard. Haptic-style feedback, "It's a match!" full-screen moment.
-- **Profile pipeline** — headless Claude Code running gstack `/review` +
-  `/cso` per PR, output normalized to a card JSON (bio, green flags, red
-  flags, risk). **Pre-generate all demo cards before the stage** — never run
-  gstack live in the demo path.
-- **gbrain** — local PGLite brain (`gbrain init`, 2s startup, no server).
-  Swipes written via `capture` with a `decision` page type; compatibility via
-  `think` with citations; agents connect over its MCP server.
-- **GitHub** — real reviews via API (APPROVE / REQUEST_CHANGES with generated
-  comment citing the reason chips + gbrain references). Demo repo, not a live
-  org.
-- **Pre-check endpoint** — small HTTP/MCP shim: agent posts a diff summary,
-  gets back predicted verdict + the memories it would trip. This one endpoint
-  is the "execution layer" claim made concrete.
+Rule: **gstack/Agent-SDK runs offline; gbrain reads are fast so they run live;
+gbrain writes are fire-and-forget on swipe.** The demo path never blocks on an
+agent.
 
-## What we reuse
+## 3. How we use gbrain (three touch points)
 
-- **gheart-eval corpus** (`forward/.claude/worktrees/gheart-eval/`): the
-  seeded-defect cases become the demo PRs — C001 IDOR (the red-flag card the
-  audience gasps at), C002 irreversible migration (the loop-closure star),
-  C005 clean decoy (instant right-swipe, shows we're not crying wolf).
-- **Loop-closure story** from the old organism plan survives intact: C002
-  rejected in iteration 1 → memory → iteration 2 arrives fixed, citing it.
-  Same learning demo, better costume.
-- **Old plan's schlep opener** and the head-to-head honesty ethos.
+gbrain surface we rely on: `gbrain init` (local PGLite, ~2s), `gbrain capture`
+(ingest a typed page), `gbrain search` (hybrid retrieval), `gbrain think`
+(synthesized answer + citations), `gbrain serve` (stdio/HTTP MCP). A "brain" is
+a DB of git-backed markdown pages with frontmatter and `[[wikilinks]]`.
 
-## Pre-event checklist
+**(a) Capture on swipe — the knowledge-capture claim.**
+In `POST /api/review`, after the GitHub review, write a `review-decision` page.
+New `server/brain.ts` → `captureDecision()`, shelling out to `gbrain capture`
+(or POST to its `/ingest` webhook). Page:
+```md
+---
+type: review-decision
+verdict: reject
+repo: demo/lovable-app
+pr: 351
+author: bug-whisperer
+reasons: [no-tests, touches-auth]
+fingerprint: { size: large, dirs: [services/payments], has_tests: false, labels: [refactor] }
+swiped_at: 2026-07-05T…
+url: https://github.com/…/pull/351
+---
+Rejected #351. No tests on a large payments refactor.
+<PR tldr pasted here so `think`/`search` has semantic content to retrieve on>
+```
+The reason chip is the structured signal; the tldr gives `think` something to
+reason over. This is why capture actually happens: two taps, real data.
 
-- [ ] Demo repo with 10–12 seeded PRs (port from gheart-eval corpus + a few
-      mundane ones for swipe-rhythm)
-- [ ] gstack + gbrain installed, profile pipeline script working end-to-end
-      on one PR
-- [ ] Card design mocked (this is a *dating app* — it needs to be pretty)
-- [ ] Reason-chip taxonomy frozen (6 chips max)
-- [ ] Pitch skeleton + 90s video beat sheet
-- [ ] One full stack rehearsal
+**(b) Score on load — the compatibility claim (the money shot).**
+When building each `PRProfile`, call `gbrain search`/`think` with the PR's
+fingerprint to find nearest past decisions, and derive a **learned**
+compatibility score + a citation. Replaces/augments the static `matchScore`.
+Add to `PRProfile`:
+```ts
+compatibility?: {
+  score: number;               // 0–100, learned from past swipes
+  verdict: 'match' | 'maybe' | 'pass';
+  why: string;                 // "You rejected #327 for the same reason"
+  citations: { pr: number; verdict: SwipeVerdict; reason: string; url: string }[];
+}
+```
+Card shows the citation line under the match bar. Over a demo session the score
+visibly climbs as the brain fills — that's Company Brain on screen.
 
-## Day of (build 12:00–17:00, 4 people)
+**(c) Agent pre-check — the execution-layer claim (Software for Agents).**
+New `POST /api/precheck`: an agent about to open a PR posts a diff summary; we
+run the same gbrain lookup (`think`) and return **machine-readable** JSON:
+```json
+{ "predictedVerdict": "reject", "confidence": 0.82,
+  "memories": [{ "pr": 327, "reason": "no rollback on schema drop", "url": "…" }] }
+```
+The agent self-corrects before the human ever sees the card. One endpoint makes
+"the brain is an execution layer" concrete.
 
-| Time | A (UI) | B (pipeline) | C (brain/agents) | D (pitch/demo) |
-|---|---|---|---|---|
-| 12:00–12:30 | roles, repo, demo repo seeded, **demo script frozen first** ||||
-| 12:30–14:00 | card stack + swipe physics | gstack → card JSON for all PRs | gbrain init, capture schema, swipe→capture wiring | pitch draft, video beat sheet |
-| 14:00–15:30 | match moment, reason chips, polish | GitHub review API wiring | pre-check endpoint + agent loop-closure demo | dry-run swipe session, freeze card content |
-| 15:30–16:15 | integrate, freeze, **record 90s video** ||||
-| 16:15–17:00 | rehearse ×3, submission materials, buffer ||||
+## 4. Claude Agent SDK running gstack (the profile pipeline)
 
-**Cut lines in order:** live GitHub API (fall back to local queue, show the
-API call in the video) → pre-check endpoint becomes a scripted terminal
-moment → gbrain becomes a JSONL ledger with identical schema → **never cut
-the swipe feel or the loop-closure beat.**
+`scripts/precompute.ts` uses `@anthropic-ai/claude-agent-sdk`. For each demo PR
+it checks the diff into a temp dir and runs gstack's review skills headlessly,
+returning structured findings — which become the card's green/red flags:
 
-## 90-second video
+```ts
+import { query } from "@anthropic-ai/claude-agent-sdk";
 
-- 0–10s — Schlep quote. "Agents opened 4,000 PRs at your company last month.
-  Someone has to say no." (screenshot: PR list from hell)
-- 10–30s — The swipe. Ten PRs in twenty seconds. C001's IDOR card comes up
-  red-flagged with the attack path. Left. *"Humans make the first move."*
-- 30–55s — The brain. Swipe left on C002 (no rollback) → gbrain page appears
-  → next agent PR arrives with a down-migration, citing the memory. Line
-  chart: left-swipe rate falling.
-- 55–75s — The match. Clean PR, agent verdict and human swipe agree, "It's a
-  match!", merge queue. Pre-check call shown: agent asks before it builds.
-- 75–90s — "gstack gave agents hands. gbrain gave them memory. gheart is
-  taste — and taste is the only moat left. Your best engineer's judgment,
-  captured two seconds at a time, working after they log off."
+for await (const msg of query({
+  prompt: "Run /review and /cso on the diff in ./work. Return findings only.",
+  options: {
+    settingSources: ["user", "project"],     // loads ~/.claude/skills/gstack
+    skills: "all",                             // enable gstack's /review, /cso
+    mcpServers: { gbrain: { command: "gbrain", args: ["serve", "--stdio"] } },
+    allowedTools: ["Read","Grep","Bash","mcp__gbrain__*"],
+    outputFormat: { type: "json_schema", schema: FINDINGS_SCHEMA }, // validated JSON
+  },
+})) {
+  if (msg.type === "result" && msg.subtype === "success") cards.push(normalize(msg.structured_output));
+}
+```
 
-## Business / judges
+Notes that matter:
+- **It's slow (~10–30s and several tool turns per PR).** Run it **before** the
+  demo; write `cards.json`; the server serves that in demo mode. Never live.
+- gstack skills trigger by task match; if a bare `/review` in the prompt doesn't
+  fire the skill on the day, describe the task so the skill's description
+  matches. Pin this in the pre-event rehearsal.
+- Registering **gbrain as an MCP server** here lets the review agent consult
+  past decisions while it writes the card, and powers the pre-check agent.
 
-- **Pricing:** per seat for swiping; per verified merge for the agent
-  pre-check API (the brain is the billing meter, same as the old plan's
-  ledger-as-billing-record).
-- **Moat:** the swipe ledger. Engineering taste as an accumulating asset that
-  survives attrition. Switching cost grows with every swipe.
-- **GTM:** free "taste audit" — point gheart at a repo's closed PRs, show the
-  org what its own rejection patterns are, sell the brain.
-- **Tan:** built *on* gstack + gbrain, not beside them — gheart is the
-  missing organ in his own stack. Name the family on the slide.
-- **Blomfield (Company Brain):** capture-without-schlep is the whole thesis;
-  the reason chip is the answer to "how do you get people to feed the brain."
+## 5. Concrete build list (mapped to files)
 
-## Submission mapping
+**P0 — the thesis must be demonstrable (do first):**
+- [ ] `server/brain.ts` — `captureDecision()` + `scoreAgainstMemory()` behind a
+      `BrainStore` interface. Two impls: real gbrain (CLI/MCP) and a
+      `brain.jsonl` fallback with identical schema (de-risk install day-of).
+- [ ] Wire `captureDecision()` into `POST /api/review`; add `reasons?: string[]`
+      to `ReviewRequest`.
+- [ ] Reason-chip picker on reject — new `src/components/ReasonChips.tsx`
+      (6 chips: *too big · no tests · touches auth · wrong layer · duplicate ·
+      vibe off*), send chips in the review.
+- [ ] `compatibility` on `PRProfile` from `scoreAgainstMemory()`; render the
+      citation line in `PRCard.tsx`.
+- [ ] Loop-closure seed: pre-load the brain with C002-iter1 rejection; show
+      C002-iter2 arriving with a high score citing the memory.
 
-problem = review bottleneck + evaporating judgment (schlep framing) ·
-product/tech = swipe capture → gbrain → agent pre-check flywheel ·
-business = per-merge pricing, taste-as-moat · demo video = above.
+**P1 — makes it real, not just live:**
+- [ ] `scripts/precompute.ts` (Agent SDK + gstack) → `cards.json`; serve it in
+      demo mode instead of `mock.ts`.
+- [ ] `greenFlags` / `redFlags` on `PRProfile` from gstack findings; render on card.
+- [ ] `POST /api/precheck` + a tiny agent-demo script that shows self-correction.
+
+**P2 — polish / stretch:**
+- [ ] "Super like" → gstack `/ship` (approve + merge queue).
+- [ ] Live GitHub reviews citing chips + gbrain refs in the comment body.
+- [ ] Match-rate line chart falling over the session.
+
+## 6. Model choices (and one real gotcha)
+
+- **Per-card summary (in-request):** keep **Haiku 4.5** (`claude-haiku-4-5`) —
+  already used in `summarize.ts`; cheap and fast, correct for a per-PR tldr.
+- **gstack review pass (offline precompute):** **Opus 4.8** (`claude-opus-4-8`)
+  — strong real-bug finding; latency/cost don't matter offline.
+- **⚠️ Do NOT default the review pass to Fable 5.** Fable 5 runs cyber-safety
+  classifiers that can **refuse** security analysis, and our C001 card runs
+  through gstack `/cso` on an IDOR — a refusal would kill the star demo. Opus
+  4.8 has no such classifier. Use Fable 5 only for non-security lenses if we
+  want max recall, with an Opus fallback.
+
+## 7. Cut lines (protect the thesis)
+
+Real gbrain **(a)+(b)** — capture on swipe and the learned, citing score — is
+the theme. Guard it:
+
+1. gstack Agent-SDK pipeline too flaky → hand-author `cards.json` from `mock.ts`
+   (green/red flags written by hand) but **keep gbrain live**. The memory loop
+   is the thesis; the gstack review is garnish.
+2. Real gbrain install painful → flip `BrainStore` to the `brain.jsonl` impl
+   (same schema, same demo, cosine/tag-overlap scoring).
+3. Pre-check endpoint → scripted terminal moment in the video.
+4. **Never cut:** the swipe feel, capture-on-swipe, and the loop-closure beat
+   (reject → memory → next PR arrives fixed, citing it).
+
+## 8. Day-of ownership (4 people)
+
+- **A (UI):** reason chips, compatibility/citation line, match moment, polish.
+- **B (pipeline):** `precompute.ts` + Agent SDK + gstack → `cards.json`; GitHub
+  review wiring.
+- **C (brain):** `server/brain.ts`, gbrain init + schema, capture + score wiring,
+  pre-check endpoint, loop-closure seed.
+- **D (pitch/demo):** freeze demo script first, dry-run the swipe session,
+  record the 90s video, submission materials.
+
+Reuse the **gheart-eval** seeded-defect corpus (`forward/.claude/worktrees/
+gheart-eval/`) for demo PRs: C001 IDOR (red-flag card), C002 migration
+(loop-closure star), C005 clean decoy (instant right-swipe).
