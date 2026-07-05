@@ -3,30 +3,21 @@ import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import type {
+  BrainMemory,
+  BrainSnapshot,
   Compatibility,
   MemoryCitation,
   PRFingerprint,
   PRProfile,
   PrecheckRequest,
   PrecheckResponse,
-  SwipeVerdict,
 } from '../shared/types';
 
 const exec = promisify(execFile);
 
 /** One captured swipe. Identical schema for the gbrain and jsonl backends. */
-export interface DecisionRecord {
+export interface DecisionRecord extends BrainMemory {
   type: 'review-decision';
-  verdict: SwipeVerdict;
-  repo: string;
-  pr: number;
-  title: string;
-  author: string;
-  reasons: string[];
-  fingerprint: PRFingerprint;
-  tldr: string;
-  url: string;
-  swiped_at: string;
 }
 
 export interface BrainStore {
@@ -36,6 +27,8 @@ export interface BrainStore {
   scoreAgainstMemory(pr: PRProfile): Promise<Compatibility | null>;
   /** Agent-facing: predict the verdict for a diff that hasn't been opened yet. */
   precheck(req: PrecheckRequest): Promise<PrecheckResponse>;
+  /** Read-only view of everything the brain has learned, newest memory first. */
+  snapshot(): Promise<BrainSnapshot>;
 }
 
 // ---------------------------------------------------------------------------
@@ -237,6 +230,28 @@ function compatibilityFromMatches(matches: Match[]): Compatibility | null {
   };
 }
 
+/** Roll a set of decisions up into the read-only view the Brain panel renders. */
+function snapshotFromDecisions(decisions: DecisionRecord[]): BrainSnapshot {
+  const memories: BrainMemory[] = [...decisions]
+    .sort((a, b) => b.swiped_at.localeCompare(a.swiped_at))
+    .map(({ type: _type, ...m }) => m);
+  const reasonCounts = new Map<string, number>();
+  for (const d of decisions)
+    for (const r of d.reasons) reasonCounts.set(r, (reasonCounts.get(r) ?? 0) + 1);
+  const topReasons = [...reasonCounts.entries()]
+    .map(([reason, count]) => ({ reason, count }))
+    .sort((a, b) => b.count - a.count);
+  return {
+    stats: {
+      total: decisions.length,
+      approved: decisions.filter((d) => d.verdict === 'approve').length,
+      rejected: decisions.filter((d) => d.verdict === 'reject').length,
+      topReasons,
+    },
+    memories,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // JSONL backend — zero-dependency fallback, same schema as the gbrain pages
 // ---------------------------------------------------------------------------
@@ -271,6 +286,10 @@ export class JsonlBrainStore implements BrainStore {
     const others = decisions.filter((d) => !(d.repo === pr.repo && d.pr === pr.number));
     const fp = pr.fingerprint ?? fingerprintFromProfile(pr);
     return compatibilityFromMatches(rankMatches(fp, `${pr.title} ${pr.tldr}`, others));
+  }
+
+  async snapshot(): Promise<BrainSnapshot> {
+    return snapshotFromDecisions(await this.load());
   }
 
   async precheck(req: PrecheckRequest): Promise<PrecheckResponse> {
@@ -369,6 +388,12 @@ export class GbrainStore implements BrainStore {
     // Deterministic scoring runs on the mirror; gbrain remains the durable,
     // searchable store (and what `think`/agents consume).
     return this.mirror.scoreAgainstMemory(pr);
+  }
+
+  async snapshot(): Promise<BrainSnapshot> {
+    // The mirror holds every decision (gbrain pages are written from it), so
+    // it's the authoritative source for the read-only view.
+    return this.mirror.snapshot();
   }
 
   async precheck(req: PrecheckRequest): Promise<PrecheckResponse> {

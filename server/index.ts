@@ -170,7 +170,11 @@ app.post('/api/review', (req, res) => {
       return;
     }
     const demo = auth.mode === 'demo';
-    if (!demo) await submitReview(repo, number, verdict, comment, user.accessToken);
+    if (!demo)
+      await submitReview(repo, number, verdict, comment, user.accessToken, {
+        viewerLogin: user.login,
+        authorLogin: brainMeta?.author,
+      });
     store.recordSwipe(user.id, `${repo}#${number}`, verdict);
 
     // Capture the decision into the brain — fire-and-forget so the swipe
@@ -226,6 +230,21 @@ app.post('/api/review/undo', (req, res) => {
     res.json({ ok: true });
   })().catch((err) =>
     res.status(502).json({ error: err instanceof Error ? err.message : 'undo failed' }),
+  );
+});
+
+// Read-only window into the brain: every captured swipe plus rollup stats,
+// so the "Company Brain" is something you can watch fill up as you swipe.
+app.get('/api/brain', (req, res) => {
+  void (async () => {
+    const user = await auth.userFor(req, res);
+    if (!user) {
+      res.status(401).json({ error: 'sign in with GitHub first' });
+      return;
+    }
+    res.json(await brain.snapshot());
+  })().catch((err) =>
+    res.status(502).json({ error: err instanceof Error ? err.message : 'failed to load brain' }),
   );
 });
 

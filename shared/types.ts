@@ -175,3 +175,31 @@ export interface PRListResponse {
   repo: string;
   prs: PRProfile[];
 }
+
+/** One captured swipe as the brain view sees it (a DecisionRecord without the type tag). */
+export interface BrainMemory {
+  verdict: SwipeVerdict;
+  repo: string;
+  pr: number;
+  title: string;
+  author: string;
+  reasons: string[];
+  fingerprint: PRFingerprint;
+  tldr: string;
+  url: string;
+  swiped_at: string;
+}
+
+export interface BrainStats {
+  total: number;
+  approved: number;
+  rejected: number;
+  /** Rejection reasons across all memories, most frequent first. */
+  topReasons: { reason: string; count: number }[];
+}
+
+/** What the brain looks like right now — its stats plus every memory, newest first. */
+export interface BrainSnapshot {
+  stats: BrainStats;
+  memories: BrainMemory[];
+}

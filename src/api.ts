@@ -1,4 +1,5 @@
 import type {
+  BrainSnapshot,
   PRListResponse,
   RepoListResponse,
   ReviewRequest,
@@ -47,4 +48,8 @@ export function sendReview(req: ReviewRequest): Promise<ReviewResponse> {
 
 export function undoReview(req: UndoRequest): Promise<{ ok: boolean }> {
   return post<{ ok: boolean }>('/api/review/undo', req);
+}
+
+export function fetchBrain(): Promise<BrainSnapshot> {
+  return request<BrainSnapshot>('/api/brain');
 }

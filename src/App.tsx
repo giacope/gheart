@@ -2,17 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PRProfile, ReviewRequest, SessionInfo, SwipeVerdict } from '../shared/types';
 import { fetchPRs, fetchSession, logout, sendReview, undoReview } from './api';
 import ActionBar from './components/ActionBar';
+import BrainPanel from './components/BrainPanel';
 import EmptyDeck from './components/EmptyDeck';
 import LoginScreen from './components/LoginScreen';
 import MatchOverlay from './components/MatchOverlay';
 import ReasonChips from './components/ReasonChips';
 import RepoPicker from './components/RepoPicker';
 import SwipeDeck, { type SwipeDeckHandle } from './components/SwipeDeck';
-
-interface HistoryEntry {
-  pr: PRProfile;
-  verdict: SwipeVerdict;
-}
+import SwipeHistory, { type HistoryEntry } from './components/SwipeHistory';
 
 function repoKey(userId: number): string {
   return `gheart:repo:${userId}`;
@@ -30,6 +27,7 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [match, setMatch] = useState<PRProfile | null>(null);
   const [pendingReject, setPendingReject] = useState<PRProfile | null>(null);
+  const [brainOpen, setBrainOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const deck = useRef<SwipeDeckHandle>(null);
   const toastTimer = useRef<number>();
@@ -226,6 +224,13 @@ export default function App() {
         <button className="repo-button" onClick={() => setPicking(true)} title="Switch repo">
           {repo || 'pick a repo'} <span className="repo-caret">▾</span>
         </button>
+        <button
+          className="brain-button"
+          onClick={() => setBrainOpen(true)}
+          title="See what the brain has learned"
+        >
+          🧠 brain
+        </button>
         {demo && (
           <a
             className="demo-badge"
@@ -280,10 +285,12 @@ export default function App() {
               disabled={prs.length === 0}
             />
             <p className="hint">swipe → to approve · ← to request changes · ↑ to skip</p>
+            <SwipeHistory history={history} demo={demo} />
           </>
         )}
       </main>
 
+      {brainOpen && <BrainPanel currentPrs={prs} onClose={() => setBrainOpen(false)} />}
       {match && <MatchOverlay pr={match} />}
       {pendingReject && <ReasonChips pr={pendingReject} onSubmit={handleReasons} />}
       {toast && <div className="toast">{toast}</div>}

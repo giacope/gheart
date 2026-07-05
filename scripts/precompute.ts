@@ -46,8 +46,12 @@ function reviewPrompt(pr: PRProfile): string {
     `Files: ${pr.topFiles.map((f) => `${f.path} (+${f.additions}/−${f.deletions})`).join(', ')}`,
     `Description: ${pr.tldr}`,
     '',
-    'Return findings only: concrete greenFlags (max 4) and redFlags (max 4),',
+    'Return findings only: concrete greenFlags and redFlags (max 4 each),',
     'each a single reviewer-facing sentence, plus an optional one-line riskNote.',
+    'Calibrate severity: a redFlag means "I would block this merge until it is',
+    'addressed" — style nits, hypotheticals, and process advice do not qualify.',
+    'Most healthy PRs have ZERO red flags; return an empty array rather than',
+    'padding. Do not treat the maximum as a quota.',
   ].join('\n');
 }
 

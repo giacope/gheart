@@ -220,27 +220,48 @@ export async function submitReview(
   verdict: SwipeVerdict,
   comment: string | undefined,
   token: string,
+  opts: { viewerLogin?: string; authorLogin?: string } = {},
 ): Promise<void> {
   if (verdict === 'skip') return; // skips never touch GitHub
 
-  const event = verdict === 'approve' ? 'APPROVE' : 'REQUEST_CHANGES';
   const body =
     comment ??
     (verdict === 'approve'
       ? 'Approved via gheart 💚 (swiped right)'
       : 'Requesting changes via gheart 💔 (swiped left)');
 
-  const res = await fetch(`${API}/repos/${repo}/pulls/${number}/reviews`, {
-    method: 'POST',
-    headers: {
-      accept: 'application/vnd.github+json',
-      authorization: `Bearer ${token}`,
-      'x-github-api-version': '2022-11-28',
-      'user-agent': 'gheart',
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({ event, body }),
-  });
+  // GitHub forbids approving or requesting changes on your own PR (422). When
+  // we can see it's a self-match up front, skip straight to a COMMENT review —
+  // still records the swipe on the PR, just without the verdict GitHub won't
+  // let you cast on yourself.
+  const ownPR =
+    !!opts.viewerLogin && !!opts.authorLogin && opts.viewerLogin === opts.authorLogin;
+  const wanted = verdict === 'approve' ? 'APPROVE' : 'REQUEST_CHANGES';
+
+  const post = (event: string) =>
+    fetch(`${API}/repos/${repo}/pulls/${number}/reviews`, {
+      method: 'POST',
+      headers: {
+        accept: 'application/vnd.github+json',
+        authorization: `Bearer ${token}`,
+        'x-github-api-version': '2022-11-28',
+        'user-agent': 'gheart',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ event, body }),
+    });
+
+  let res = await post(ownPR ? 'COMMENT' : wanted);
+
+  // Safety net: if the author wasn't known up front, GitHub still tells us with
+  // a 422 self-review error. Retry once as a plain comment so the swipe lands.
+  if (res.status === 422 && !ownPR) {
+    const text = await res.clone().text().catch(() => '');
+    if (/can ?not approve your own pull request|own pull request/i.test(text)) {
+      res = await post('COMMENT');
+    }
+  }
+
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     throw new Error(`GitHub review failed (${res.status}): ${text.slice(0, 300)}`);
