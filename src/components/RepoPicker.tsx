@@ -6,6 +6,8 @@ interface Props {
   currentRepo: string;
   onPick: (repo: string) => void;
   onClose?: () => void;
+  /** App mode: show the "add more repos" installation link. */
+  showInstallLink?: boolean;
 }
 
 function agoLabel(iso: string): string {
@@ -16,14 +18,18 @@ function agoLabel(iso: string): string {
   return `active ${Math.floor(days / 30)}mo ago`;
 }
 
-export default function RepoPicker({ currentRepo, onPick, onClose }: Props) {
+export default function RepoPicker({ currentRepo, onPick, onClose, showInstallLink }: Props) {
   const [repos, setRepos] = useState<RepoInfo[] | null>(null);
+  const [needsInstall, setNeedsInstall] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
 
   useEffect(() => {
     fetchRepos()
-      .then((data) => setRepos(data.repos))
+      .then((data) => {
+        setRepos(data.repos);
+        setNeedsInstall(Boolean(data.needsInstall));
+      })
       .catch((err: Error) => setError(err.message));
   }, []);
 
@@ -42,6 +48,23 @@ export default function RepoPicker({ currentRepo, onPick, onClose }: Props) {
     const value = query.trim();
     if (/^[\w.-]+\/[\w.-]+$/.test(value)) onPick(value);
   };
+
+  if (needsInstall) {
+    return (
+      <div className="repo-picker">
+        <div className="repo-picker-head">
+          <h2>Install gheart on your repos</h2>
+        </div>
+        <p className="repo-picker-loading">
+          gheart isn&apos;t installed anywhere yet. Install the GitHub App on the repos you want
+          to review — only those repos become swipeable.
+        </p>
+        <a className="install-cta" href="/api/auth/install">
+          Install on GitHub →
+        </a>
+      </div>
+    );
+  }
 
   return (
     <div className="repo-picker">
@@ -92,6 +115,11 @@ export default function RepoPicker({ currentRepo, onPick, onClose }: Props) {
             </li>
           ))}
         </ul>
+      )}
+      {showInstallLink && (
+        <a className="install-link" href="/api/auth/install">
+          missing a repo? add it to the gheart installation →
+        </a>
       )}
     </div>
   );

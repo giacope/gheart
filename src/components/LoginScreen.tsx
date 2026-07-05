@@ -14,8 +14,8 @@ export default function LoginScreen() {
         Sign in with GitHub
       </a>
       <p className="login-fineprint">
-        gheart asks for the <code>repo</code> scope so it can list your repositories and submit
-        reviews on your behalf. Swipes are real reviews.
+        gheart is a GitHub App with least-privilege access: pull requests read/write on only the
+        repos where you install it. Swipes are real reviews, submitted as you.
       </p>
     </div>
   );

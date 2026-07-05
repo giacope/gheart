@@ -54,7 +54,7 @@ export interface PRProfile {
 export type SwipeVerdict = 'approve' | 'reject' | 'skip';
 
 /** How the server is authenticating against GitHub. */
-export type AuthMode = 'oauth' | 'token' | 'demo';
+export type AuthMode = 'app' | 'token' | 'demo';
 
 export interface AuthUser {
   /** GitHub user id (0 for the synthetic demo user). */
@@ -66,7 +66,7 @@ export interface AuthUser {
 
 export interface SessionInfo {
   mode: AuthMode;
-  /** Null only in oauth mode before the user signs in. */
+  /** Null only in app mode before the user signs in. */
   user: AuthUser | null;
 }
 
@@ -83,6 +83,8 @@ export interface RepoInfo {
 
 export interface RepoListResponse {
   repos: RepoInfo[];
+  /** App mode only: true when the GitHub App isn't installed anywhere yet. */
+  needsInstall?: boolean;
 }
 
 export interface UndoRequest {

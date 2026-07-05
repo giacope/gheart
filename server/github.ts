@@ -43,22 +43,59 @@ interface RawRepo {
   archived: boolean;
 }
 
+function toRepoInfo(r: RawRepo): RepoInfo {
+  return {
+    fullName: r.full_name,
+    private: r.private,
+    description: r.description,
+    pushedAt: r.pushed_at,
+    stars: r.stargazers_count,
+    language: r.language,
+    openIssues: r.open_issues_count,
+  };
+}
+
 export async function fetchUserRepos(token: string): Promise<RepoInfo[]> {
   const raw = await gh<RawRepo[]>(
     '/user/repos?sort=pushed&per_page=100&affiliation=owner,collaborator,organization_member',
     token,
   );
-  return raw
-    .filter((r) => !r.archived)
-    .map((r) => ({
-      fullName: r.full_name,
-      private: r.private,
-      description: r.description,
-      pushedAt: r.pushed_at,
-      stars: r.stargazers_count,
-      language: r.language,
-      openIssues: r.open_issues_count,
-    }));
+  return raw.filter((r) => !r.archived).map(toRepoInfo);
+}
+
+interface RawInstallations {
+  total_count: number;
+  installations: Array<{ id: number }>;
+}
+
+interface RawInstallationRepos {
+  total_count: number;
+  repositories: RawRepo[];
+}
+
+/**
+ * Repos reachable through the gheart GitHub App: the union of repos across
+ * the app's installations that the signed-in user can also access.
+ */
+export async function fetchInstalledRepos(token: string): Promise<RepoInfo[] | null> {
+  const { installations } = await gh<RawInstallations>('/user/installations?per_page=100', token);
+  if (installations.length === 0) return null; // app not installed anywhere yet
+
+  const byName = new Map<string, RepoInfo>();
+  await Promise.all(
+    installations.map(async (inst) => {
+      const { repositories } = await gh<RawInstallationRepos>(
+        `/user/installations/${inst.id}/repositories?per_page=100`,
+        token,
+      );
+      for (const r of repositories) {
+        if (!r.archived) byName.set(r.full_name, toRepoInfo(r));
+      }
+    }),
+  );
+  return [...byName.values()].sort(
+    (a, b) => new Date(b.pushedAt).getTime() - new Date(a.pushedAt).getTime(),
+  );
 }
 
 interface RawPR {

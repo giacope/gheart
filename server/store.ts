@@ -5,11 +5,28 @@ import type { AuthUser, SwipeVerdict } from '../shared/types';
 
 const SESSION_TTL_MS = 30 * 86_400_000; // 30 days
 
-export interface StoredUser extends AuthUser {
-  /** GitHub OAuth access token (or the env token in token mode, '' in demo mode). */
+export interface UserTokens {
+  /** GitHub user-to-server token (or the env token in token mode, '' in demo mode). */
   accessToken: string;
+  /** Refresh token for app-mode user tokens (they expire after ~8h). */
+  refreshToken?: string;
+  /** ISO timestamp when accessToken expires; absent = never. */
+  tokenExpiresAt?: string;
+}
+
+export interface StoredUser extends AuthUser, UserTokens {
   createdAt: string;
   updatedAt: string;
+}
+
+/** Credentials of the gheart GitHub App, captured by the manifest setup flow. */
+export interface AppCredentials {
+  appId: number;
+  slug: string;
+  clientId: string;
+  clientSecret: string;
+  pem?: string;
+  webhookSecret?: string | null;
 }
 
 interface StoredSession {
@@ -29,6 +46,7 @@ interface StoreData {
   sessions: Record<string, StoredSession>;
   /** userId -> "owner/name#number" -> record */
   swipes: Record<string, Record<string, SwipeRecord>>;
+  app?: AppCredentials;
 }
 
 const EMPTY: StoreData = { users: {}, sessions: {}, swipes: {} };
@@ -53,6 +71,7 @@ export class Store {
         users: parsed.users ?? {},
         sessions: parsed.sessions ?? {},
         swipes: parsed.swipes ?? {},
+        app: parsed.app,
       };
     } catch {
       return structuredClone(EMPTY);
@@ -74,14 +93,25 @@ export class Store {
     }, 50);
   }
 
+  // ---- app credentials ----
+
+  getAppCredentials(): AppCredentials | null {
+    return this.data.app ?? null;
+  }
+
+  setAppCredentials(app: AppCredentials): void {
+    this.data.app = app;
+    this.save();
+  }
+
   // ---- users ----
 
-  upsertUser(user: AuthUser, accessToken: string): StoredUser {
+  upsertUser(user: AuthUser, tokens: UserTokens): StoredUser {
     const now = new Date().toISOString();
     const existing = this.data.users[String(user.id)];
     const stored: StoredUser = {
       ...user,
-      accessToken,
+      ...tokens,
       createdAt: existing?.createdAt ?? now,
       updatedAt: now,
     };

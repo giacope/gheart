@@ -20,33 +20,33 @@ With no configuration, gheart runs in **demo mode** with a deck of fictional-but
 
 ## Reviewing real PRs
 
-gheart has three auth modes, picked automatically from the environment:
+gheart is a **GitHub App** (not an OAuth app): least-privilege permissions (pull requests read/write, checks + contents read), access only to the repos you install it on, and short-lived user tokens that gheart refreshes automatically. Reviews are still submitted **as the signed-in user** — approvals count for branch protection, with a "via gheart" attribution.
 
-1. **GitHub OAuth (multi-user)** — the real thing. Each reviewer signs in with GitHub, picks one of their repos, and swipes with their own account. Reviews are submitted as the signed-in user, and every user gets their own deck (PRs you've already reviewed don't come back).
+Three auth modes, picked automatically:
 
-   [Create a GitHub OAuth app](https://github.com/settings/applications/new) with callback URL `http://localhost:5173/api/auth/callback` (or your deployed origin + `/api/auth/callback`), then:
+1. **GitHub App (multi-user)** — the real thing. One-time setup, no GitHub forms to fill:
 
    ```bash
-   GITHUB_CLIENT_ID=xxx GITHUB_CLIENT_SECRET=yyy npm run dev
+   npm run dev            # then visit http://localhost:5173/api/setup
    ```
 
-   This repo manages those with [mise](https://mise.jdx.dev) + [fnox](https://fnox.jdx.dev): `mise.toml` sets `GITHUB_CLIENT_ID` and pulls `GITHUB_CLIENT_SECRET` from the encrypted `fnox.toml` (age-encrypted; decryption needs the key in `~/.config/fnox/age.txt`). With mise activated, just `npm run dev` — the env is already there. To rotate the secret: `fnox set GITHUB_CLIENT_SECRET`. Without the age key, mise env resolution fails — fall back to plain env vars or your own fnox key.
+   The setup page creates the GitHub App for you via GitHub's [manifest flow](https://docs.github.com/en/apps/sharing-github-apps/registering-a-github-app-from-a-manifest) — one confirmation click on GitHub and the credentials land in gheart's data file automatically (no restart needed). Then install the app on the repos you want to review. Each reviewer signs in with GitHub, sees the installed repos in the picker, and gets their own deck (PRs you've already reviewed don't come back).
 
-2. **Single token** — quick and personal, no OAuth app needed:
+2. **Single token** — quick and personal, no app needed:
 
    ```bash
    GITHUB_TOKEN=ghp_yourtoken GHEART_REPO=owner/repo npm run dev
    ```
 
-3. **Demo** — no env vars at all.
+3. **Demo** — no configuration at all.
 
 | Env var | What it does |
 | --- | --- |
-| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | Enables the GitHub OAuth sign-in flow (multi-user mode). The OAuth app needs the `repo` scope granted at authorize time (gheart requests `repo read:user`). |
-| `GHEART_BASE_URL` | Public origin for the OAuth callback (e.g. `https://gheart.example.com`). Defaults to the request's host, which is right for local dev. |
-| `GITHUB_TOKEN` | Single-token live mode (used when no OAuth app is configured). Needs `repo` scope. Swiping **right approves** the PR and **left requests changes** — for real. |
+| `GITHUB_APP_CLIENT_ID` / `GITHUB_APP_CLIENT_SECRET` / `GITHUB_APP_SLUG` | Optional — the `/api/setup` flow stores these in the data file for you. Set them (e.g. via [mise](https://mise.jdx.dev) + [fnox](https://fnox.jdx.dev), see `mise.toml`) to override the stored credentials, e.g. in another deployment. |
+| `GHEART_BASE_URL` | Public origin for OAuth/setup callbacks (e.g. `https://gheart.example.com`). Defaults to the request's host, which is right for local dev. |
+| `GITHUB_TOKEN` | Single-token live mode (used when no GitHub App is configured). Needs `repo` scope. Swiping **right approves** the PR and **left requests changes** — for real. |
 | `GHEART_REPO` | Default `owner/repo` to load. You can also pick any repo from the in-app picker. |
-| `GHEART_DATA` | Where the JSON store (users, sessions, per-user swipe history) lives. Default `data/gheart.json`. |
+| `GHEART_DATA` | Where the JSON store (app credentials, users, sessions, per-user swipe history) lives. Default `data/gheart.json`. |
 | `ANTHROPIC_API_KEY` | Optional. Uses Claude to write the TL;DR and ELI5. Without it, a rule-based summarizer takes over. |
 | `GHEART_MODEL` | Claude model for summaries (default `claude-haiku-4-5-20251001`). |
 | `PORT` | API server port (default `8788`). |
@@ -80,6 +80,6 @@ npm start       # serve the built app + API on :8788
 
 ## How it's put together
 
-- `server/` — small Express API: `GET /api/prs` (fetches open PRs, enriches with files/checks, summarizes, and filters out ones you've already reviewed), `POST /api/review` (submits the review as you), `GET /api/repos` (your repos for the picker), and `/api/auth/*` (GitHub OAuth flow + cookie sessions). `store.ts` is a tiny JSON-file store for users, sessions, and per-user swipe history. `mock.ts` powers demo mode with fully offline animated-SVG "UI clips".
+- `server/` — small Express API: `GET /api/prs` (fetches open PRs, enriches with files/checks, summarizes, and filters out ones you've already reviewed), `POST /api/review` (submits the review as you), `GET /api/repos` (repos from the app's installations), `/api/auth/*` (GitHub App user flow + cookie sessions + token refresh), and `/api/setup` (one-click app creation via the manifest flow). `store.ts` is a tiny JSON-file store for app credentials, users, sessions, and per-user swipe history. `mock.ts` powers demo mode with fully offline animated-SVG "UI clips".
 - `src/` — React + Vite frontend. `SwipeDeck` implements the drag physics with pointer events (no gesture library): rotation follows the drag, stamps (`APPROVE` / `NOPE` / `SKIP`) fade in with distance, and vertical scrolling inside the card still works.
 - `shared/types.ts` — the `PRProfile` contract both sides speak.

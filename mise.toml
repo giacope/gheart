@@ -1,8 +1,12 @@
 [tools]
 node = "22"
 
-[env]
-# GitHub OAuth app for gheart (client IDs aren't secret; the secret lives
-# encrypted in fnox.toml and needs the age key in ~/.config/fnox/age.txt).
-GITHUB_CLIENT_ID = "Ov23lir0zUbF5m22Hnnf"
-GITHUB_CLIENT_SECRET = "{{ exec(command='fnox get GITHUB_CLIENT_SECRET') }}"
+# GitHub App credentials are captured automatically by the one-click manifest
+# setup at /api/setup and stored in data/gheart.json. To manage them via
+# env instead (they override the stored ones), set GITHUB_APP_CLIENT_ID and
+# GITHUB_APP_SLUG here, keep GITHUB_APP_CLIENT_SECRET in fnox, e.g.:
+#
+# [env]
+# GITHUB_APP_CLIENT_ID = "Iv23..."
+# GITHUB_APP_SLUG = "gheart-xxxx"
+# GITHUB_APP_CLIENT_SECRET = "{{ exec(command='fnox get GITHUB_APP_CLIENT_SECRET') }}"

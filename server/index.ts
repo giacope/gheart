@@ -10,8 +10,9 @@ import type {
   UndoRequest,
 } from '../shared/types';
 import { Auth } from './auth';
-import { fetchOpenPRs, fetchUserRepos, submitReview } from './github';
+import { fetchInstalledRepos, fetchOpenPRs, fetchUserRepos, submitReview } from './github';
 import { mockPRs } from './mock';
+import { setupRouter } from './setup';
 import { Store } from './store';
 
 const app = express();
@@ -23,15 +24,18 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const store = new Store(process.env.GHEART_DATA || path.resolve(here, '../data/gheart.json'));
 const auth = new Auth(
   {
-    clientId: process.env.GITHUB_CLIENT_ID || '',
-    clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
+    app: {
+      appId: Number(process.env.GITHUB_APP_ID || 0) || undefined,
+      slug: process.env.GITHUB_APP_SLUG || undefined,
+      clientId: process.env.GITHUB_APP_CLIENT_ID || undefined,
+      clientSecret: process.env.GITHUB_APP_CLIENT_SECRET || undefined,
+    },
     envToken: process.env.GITHUB_TOKEN || process.env.GH_TOKEN || '',
     baseUrl: process.env.GHEART_BASE_URL || '',
   },
   store,
 );
 
-const DEMO = auth.mode === 'demo';
 const DEFAULT_REPO = process.env.GHEART_REPO || '';
 const REPO_RE = /^[\w.-]+\/[\w.-]+$/;
 
@@ -57,9 +61,10 @@ const DEMO_REPOS: RepoInfo[] = [
 ];
 
 app.use('/api/auth', auth.router());
+app.use('/api/setup', setupRouter(auth, store));
 
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, demo: DEMO, mode: auth.mode });
+  res.json({ ok: true, demo: auth.mode === 'demo', mode: auth.mode });
 });
 
 app.get('/api/auth/me', (req, res) => {
@@ -78,9 +83,16 @@ app.get('/api/repos', (req, res) => {
       res.status(401).json({ error: 'sign in with GitHub first' });
       return;
     }
-    const payload: RepoListResponse = {
-      repos: DEMO ? DEMO_REPOS : await fetchUserRepos(user.accessToken),
-    };
+    let payload: RepoListResponse;
+    if (auth.mode === 'demo') {
+      payload = { repos: DEMO_REPOS };
+    } else if (auth.mode === 'token') {
+      payload = { repos: await fetchUserRepos(user.accessToken) };
+    } else {
+      // App mode: repos come from where the app is installed.
+      const repos = await fetchInstalledRepos(user.accessToken);
+      payload = repos === null ? { repos: [], needsInstall: true } : { repos };
+    }
     res.json(payload);
   })().catch((err) =>
     res.status(502).json({ error: err instanceof Error ? err.message : 'failed to load repos' }),
@@ -94,18 +106,19 @@ app.get('/api/prs', (req, res) => {
       res.status(401).json({ error: 'sign in with GitHub first' });
       return;
     }
-    const repo = String(req.query.repo || DEFAULT_REPO || (DEMO ? 'demo/lovable-app' : ''));
+    const demo = auth.mode === 'demo';
+    const repo = String(req.query.repo || DEFAULT_REPO || (demo ? 'demo/lovable-app' : ''));
     if (!REPO_RE.test(repo)) {
       res
         .status(400)
         .json({ error: repo ? `"${repo}" is not an owner/name repo` : 'pick a repo first' });
       return;
     }
-    const all = DEMO ? mockPRs(repo) : await fetchOpenPRs(repo, user.accessToken);
+    const all = demo ? mockPRs(repo) : await fetchOpenPRs(repo, user.accessToken);
     // Multi-user: each reviewer only sees PRs they haven't already reviewed.
     const swiped = store.swipedIds(user.id);
     const prs = all.filter((p) => !swiped.has(p.id));
-    const payload: PRListResponse = { demo: DEMO, repo, prs };
+    const payload: PRListResponse = { demo, repo, prs };
     res.json(payload);
   })().catch((err) =>
     res.status(502).json({ error: err instanceof Error ? err.message : 'failed to load PRs' }),
@@ -124,16 +137,17 @@ app.post('/api/review', (req, res) => {
       res.status(400).json({ error: 'expected { repo, number, verdict }' });
       return;
     }
-    if (!DEMO) await submitReview(repo, number, verdict, comment, user.accessToken);
+    const demo = auth.mode === 'demo';
+    if (!demo) await submitReview(repo, number, verdict, comment, user.accessToken);
     store.recordSwipe(user.id, `${repo}#${number}`, verdict);
     const messages = {
-      approve: DEMO ? `Demo: would approve ${repo}#${number}` : `Approved ${repo}#${number}`,
-      reject: DEMO
+      approve: demo ? `Demo: would approve ${repo}#${number}` : `Approved ${repo}#${number}`,
+      reject: demo
         ? `Demo: would request changes on ${repo}#${number}`
         : `Requested changes on ${repo}#${number}`,
       skip: `Skipped ${repo}#${number} — maybe it's the one that got away`,
     } as const;
-    const payload: ReviewResponse = { ok: true, demo: DEMO, message: messages[verdict] };
+    const payload: ReviewResponse = { ok: true, demo, message: messages[verdict] };
     res.json(payload);
   })().catch((err) =>
     res.status(502).json({ error: err instanceof Error ? err.message : 'review failed' }),
@@ -170,9 +184,9 @@ if (process.env.NODE_ENV === 'production') {
 
 app.listen(PORT, () => {
   const modeNote = {
-    oauth: '(GitHub OAuth mode — multi-user)',
-    token: '(single-token mode — set GITHUB_CLIENT_ID/SECRET for OAuth)',
-    demo: '(demo mode — set GITHUB_CLIENT_ID/SECRET or GITHUB_TOKEN for live PRs)',
+    app: '(GitHub App mode — multi-user)',
+    token: '(single-token mode — visit /api/setup to create the GitHub App)',
+    demo: '(demo mode — visit /api/setup to create the GitHub App, or set GITHUB_TOKEN)',
   }[auth.mode];
   console.log(`gheart api on http://localhost:${PORT} ${modeNote}`);
 });

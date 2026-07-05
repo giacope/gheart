@@ -182,17 +182,18 @@ export default function App() {
           {repo || 'pick a repo'} <span className="repo-caret">▾</span>
         </button>
         {demo && (
-          <span
+          <a
             className="demo-badge"
-            title="Set GITHUB_CLIENT_ID/SECRET or GITHUB_TOKEN for real PRs"
+            href="/api/setup"
+            title="Visit /api/setup to create the GitHub App and review real PRs"
           >
             demo mode
-          </span>
+          </a>
         )}
         <div className="user-chip" title={user.name ?? user.login}>
           <img className="user-avatar" src={user.avatarUrl} alt="" />
           <span className="user-login">{user.login}</span>
-          {session.mode === 'oauth' && (
+          {session.mode === 'app' && (
             <button className="logout" onClick={handleLogout} title="Sign out">
               sign out
             </button>
@@ -206,6 +207,7 @@ export default function App() {
             currentRepo={repo}
             onPick={pickRepo}
             onClose={repo ? () => setPicking(false) : undefined}
+            showInstallLink={session.mode === 'app'}
           />
         ) : loading ? (
           <div className="loading">
