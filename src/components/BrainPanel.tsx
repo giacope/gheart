@@ -134,6 +134,12 @@ export default function BrainPanel({ currentPrs, history, demo, onClose }: Props
                   <span className="brain-stat-num brain-approve">{stats.approved}</span>
                   <span className="brain-stat-label">approved</span>
                 </div>
+                {stats.superliked > 0 && (
+                  <div className="brain-stat">
+                    <span className="brain-stat-num brain-superlike">{stats.superliked}</span>
+                    <span className="brain-stat-label">super ⭐</span>
+                  </div>
+                )}
                 <div className="brain-stat">
                   <span className="brain-stat-num brain-reject">{stats.rejected}</span>
                   <span className="brain-stat-label">rejected</span>
@@ -205,11 +211,12 @@ export default function BrainPanel({ currentPrs, history, demo, onClose }: Props
 }
 
 function MemoryRow({ m, citedBy }: { m: BrainMemory; citedBy?: number[] }) {
-  const approved = m.verdict === 'approve';
+  const superliked = m.verdict === 'superlike';
+  const approved = m.verdict === 'approve' || superliked;
   return (
-    <div className={`brain-memory ${approved ? 'approve' : 'reject'}`}>
+    <div className={`brain-memory ${approved ? 'approve' : 'reject'}${superliked ? ' superlike' : ''}`}>
       <div className="brain-memory-top">
-        <span className="brain-memory-verdict">{approved ? '💚' : '💔'}</span>
+        <span className="brain-memory-verdict">{superliked ? '⭐' : approved ? '💚' : '💔'}</span>
         <a href={m.url} target="_blank" rel="noreferrer" className="brain-memory-title">
           #{m.pr} {m.title}
         </a>

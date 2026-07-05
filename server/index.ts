@@ -203,6 +203,9 @@ app.post('/api/review', (req, res) => {
 
     const messages = {
       approve: demo ? `Demo: would approve ${repo}#${number}` : `Approved ${repo}#${number}`,
+      superlike: demo
+        ? `Demo: would super approve ${repo}#${number} ⭐`
+        : `Super approved ${repo}#${number} ⭐`,
       reject: demo
         ? `Demo: would request changes on ${repo}#${number}`
         : `Requested changes on ${repo}#${number}`,

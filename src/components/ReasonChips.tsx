@@ -21,7 +21,7 @@ export const APPROVE_REASONS = [
 interface Props {
   pr: PRProfile;
   onSubmit(reasons: string[]): void;
-  verdict?: 'approve' | 'reject';
+  verdict?: 'approve' | 'reject' | 'superlike';
 }
 
 /** Copy + chip set differ by verdict; the brain learns from either signal. */
@@ -40,6 +40,13 @@ const COPY = {
     skip: 'just yes',
     send: 'remember this 🧠',
   },
+  superlike: {
+    reasons: APPROVE_REASONS,
+    aria: 'What made this a super yes?',
+    heading: 'What made this a ⭐ super yes?',
+    skip: 'obviously',
+    send: 'remember this 🧠',
+  },
 } as const;
 
 /**
@@ -55,7 +62,7 @@ export default function ReasonChips({ pr, onSubmit, verdict = 'reject' }: Props)
 
   return (
     <div
-      className={`reason-overlay${verdict === 'approve' ? ' approve' : ''}`}
+      className={`reason-overlay${verdict === 'approve' || verdict === 'superlike' ? ' approve' : ''}${verdict === 'superlike' ? ' superlike' : ''}`}
       role="dialog"
       aria-label={copy.aria}
     >

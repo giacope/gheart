@@ -14,6 +14,7 @@ interface Props {
 
 export const VERDICT_META: Record<SwipeVerdict, { icon: string; label: string; cls: string }> = {
   approve: { icon: '💚', label: 'Approved', cls: 'approve' },
+  superlike: { icon: '⭐', label: 'Super approved', cls: 'superlike' },
   reject: { icon: '💔', label: 'Changes requested', cls: 'reject' },
   skip: { icon: '🙈', label: 'Skipped', cls: 'skip' },
 };
@@ -68,6 +69,7 @@ export default function SwipeHistory({ history, demo }: Props) {
   if (history.length === 0) return null;
 
   const approved = history.filter((h) => h.verdict === 'approve').length;
+  const superliked = history.filter((h) => h.verdict === 'superlike').length;
   const rejected = history.filter((h) => h.verdict === 'reject').length;
   const skipped = history.filter((h) => h.verdict === 'skip').length;
   // Newest first — the last swipe is the one you're most likely reconsidering.
@@ -83,6 +85,7 @@ export default function SwipeHistory({ history, demo }: Props) {
         <span className="swipe-history-title">🕘 {history.length} swiped this session</span>
         <span className="swipe-history-tally">
           <span className="sh-tally approve">💚 {approved}</span>
+          <span className="sh-tally superlike">⭐ {superliked}</span>
           <span className="sh-tally reject">💔 {rejected}</span>
           <span className="sh-tally skip">🙈 {skipped}</span>
         </span>

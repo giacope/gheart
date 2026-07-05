@@ -42,6 +42,14 @@ export default function ActionBar({ onAction, onUndo, canUndo, disabled }: Props
       >
         ♥
       </button>
+      <button
+        className="action super"
+        title="Super approve — the strongest yes (s)"
+        onClick={() => onAction('superlike')}
+        disabled={disabled}
+      >
+        ⭐
+      </button>
     </div>
   );
 }

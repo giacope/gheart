@@ -25,9 +25,12 @@ export default function App() {
   const [picking, setPicking] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [match, setMatch] = useState<PRProfile | null>(null);
+  const [match, setMatch] = useState<{ pr: PRProfile; super: boolean } | null>(null);
   const [pendingReject, setPendingReject] = useState<PRProfile | null>(null);
-  const [pendingApprove, setPendingApprove] = useState<PRProfile | null>(null);
+  const [pendingApprove, setPendingApprove] = useState<{
+    pr: PRProfile;
+    super: boolean;
+  } | null>(null);
   const [brainOpen, setBrainOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const deck = useRef<SwipeDeckHandle>(null);
@@ -109,7 +112,7 @@ export default function App() {
       };
       void sendReview(req)
         .then((res) => {
-          if (verdict !== 'approve') showToast(res.message);
+          if (verdict !== 'approve' && verdict !== 'superlike') showToast(res.message);
         })
         .catch((err: Error) => showToast(`⚠️ ${err.message}`));
     },
@@ -120,10 +123,10 @@ export default function App() {
     (pr: PRProfile, verdict: SwipeVerdict) => {
       setPrs((rest) => rest.filter((p) => p.id !== pr.id));
       setHistory((h) => [...h, { pr, verdict }]);
-      if (verdict === 'approve') {
+      if (verdict === 'approve' || verdict === 'superlike') {
         // Hold the review + match until the love chips are answered — the
         // captured reasons are the brain's explicit positive signal.
-        setPendingApprove(pr);
+        setPendingApprove({ pr, super: verdict === 'superlike' });
         return;
       }
       if (verdict === 'reject') {
@@ -149,9 +152,10 @@ export default function App() {
   const handleApproveReasons = useCallback(
     (reasons: string[]) => {
       if (!pendingApprove) return;
-      submitReview(pendingApprove, 'approve', reasons);
+      const { pr, super: isSuper } = pendingApprove;
+      submitReview(pr, isSuper ? 'superlike' : 'approve', reasons);
       // Now play the match beat that a right-swipe usually shows immediately.
-      setMatch(pendingApprove);
+      setMatch({ pr, super: isSuper });
       window.setTimeout(() => setMatch(null), 1500);
       setPendingApprove(null);
     },
@@ -164,9 +168,9 @@ export default function App() {
       const last = h[h.length - 1];
       setPrs((rest) => [last.pr, ...rest]);
       // A reject/approve still waiting on reason chips was never sent — just cancel it.
-      const wasPending = pendingReject?.id === last.pr.id || pendingApprove?.id === last.pr.id;
+      const wasPending = pendingReject?.id === last.pr.id || pendingApprove?.pr.id === last.pr.id;
       if (pendingReject?.id === last.pr.id) setPendingReject(null);
-      if (pendingApprove?.id === last.pr.id) setPendingApprove(null);
+      if (pendingApprove?.pr.id === last.pr.id) setPendingApprove(null);
       if (last.verdict !== 'skip' && !wasPending) {
         // Forget the swipe server-side so the card comes back on reload too.
         void undoReview({ repo: last.pr.repo, number: last.pr.number }).catch(() => undefined);
@@ -186,6 +190,7 @@ export default function App() {
       if (e.key === 'ArrowRight') deck.current?.swipe('approve');
       else if (e.key === 'ArrowLeft') deck.current?.swipe('reject');
       else if (e.key === 'ArrowUp') deck.current?.swipe('skip');
+      else if (e.key === 's') deck.current?.swipe('superlike');
       else if (e.key === 'u') handleUndo();
     };
     window.addEventListener('keydown', onKey);
@@ -300,7 +305,9 @@ export default function App() {
               canUndo={history.length > 0}
               disabled={prs.length === 0}
             />
-            <p className="hint">swipe → approve · ← request changes · ↑ skip · scroll for the full profile</p>
+            <p className="hint">
+              swipe → to approve · ← to request changes · ↑ to skip · s for a ⭐ super approve
+            </p>
             <SwipeHistory history={history} demo={demo} />
           </>
         )}
@@ -314,10 +321,15 @@ export default function App() {
           onClose={() => setBrainOpen(false)}
         />
       )}
-      {match && <MatchOverlay pr={match} />}
+      {agentOpen && <AgentView onClose={() => setAgentOpen(false)} />}
+      {match && <MatchOverlay pr={match.pr} super={match.super} />}
       {pendingReject && <ReasonChips pr={pendingReject} onSubmit={handleReasons} />}
       {pendingApprove && (
-        <ReasonChips verdict="approve" pr={pendingApprove} onSubmit={handleApproveReasons} />
+        <ReasonChips
+          verdict={pendingApprove.super ? 'superlike' : 'approve'}
+          pr={pendingApprove.pr}
+          onSubmit={handleApproveReasons}
+        />
       )}
       {toast && <div className="toast">{toast}</div>}
     </div>

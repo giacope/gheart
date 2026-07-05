@@ -8,8 +8,8 @@
   --red: #ff5864;
   --blue: #58a6ff;
   --amber: #ffcf33;
-  --line: rgba(255, 255, 255, 0.07);
-  --radius: 24px;
+  --super: #b388ff;
+  --radius: 18px;
   color-scheme: dark;
 }
 
@@ -1765,4 +1765,249 @@ em.del {
 .reason-overlay.approve .reason-send {
   background: var(--green);
   color: #06281a;
+}
+
+/* ── feature: agent view ── */
+.agent-button {
+  background: var(--card);
+  border: 1px solid #2e2e40;
+  color: var(--text);
+  border-radius: 10px;
+  padding: 7px 12px;
+  font-size: 13px;
+  font-family: ui-monospace, monospace;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.agent-button:hover {
+  border-color: var(--blue);
+}
+
+/* The panel reuses .brain-panel; the body is an agent's-eye-view terminal. */
+.agent-console {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 18px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-family: ui-monospace, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.agent-line {
+  margin: 0;
+  color: #cfcfe0;
+}
+
+.agent-prompt {
+  color: var(--green);
+  font-weight: 700;
+  margin-right: 4px;
+}
+
+.agent-final {
+  color: #bfe9d3;
+}
+
+.agent-waiting {
+  margin: 0;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.agent-error {
+  margin: 0;
+}
+
+.agent-draft {
+  background: var(--card);
+  border: 1px solid #23232f;
+  border-left: 3px solid var(--amber);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.agent-draft-title {
+  font-weight: 700;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.agent-draft-summary {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.agent-result {
+  background: var(--card);
+  border: 1px solid #23232f;
+  border-left: 3px solid #3a3a52;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.agent-result.reject {
+  border-left-color: var(--red);
+}
+
+.agent-result.approve {
+  border-left-color: var(--green);
+}
+
+.agent-result-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.agent-result-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--muted);
+}
+
+.agent-verdict {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-weight: 700;
+  text-align: right;
+}
+
+.agent-verdict.reject {
+  color: var(--red);
+}
+
+.agent-verdict.approve {
+  color: var(--green);
+}
+
+.agent-verdict.unknown {
+  color: var(--muted);
+}
+
+.agent-confidence {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.agent-memories {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.agent-memory {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.agent-memory-verdict {
+  flex: none;
+}
+
+.agent-memory-link {
+  color: #cfcfe0;
+  text-decoration: none;
+  font-size: 12px;
+}
+
+.agent-memory-link:hover {
+  color: var(--blue);
+}
+
+.agent-advice {
+  margin: 10px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid #23232f;
+  color: #d4d4e6;
+  font-size: 12px;
+}
+
+.agent-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.agent-retry {
+  align-self: flex-start;
+  background: var(--card-2);
+  border: 1px solid var(--amber);
+  color: var(--amber);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-family: ui-monospace, monospace;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 80ms ease;
+}
+
+.agent-retry:hover:not(:disabled) {
+  transform: scale(1.04);
+}
+
+.agent-retry:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ── feature: super swipe ── */
+.action.super {
+  color: var(--super);
+  border-color: var(--super);
+  box-shadow: 0 0 18px rgba(179, 136, 255, 0.35);
+}
+
+.stamp.super {
+  left: 50%;
+  top: 44%;
+  color: var(--super);
+  border-color: var(--super);
+  transform: translateX(-50%) rotate(-6deg);
+}
+
+.match-overlay.super {
+  background: rgba(20, 12, 33, 0.85);
+}
+
+.match-overlay.super .match-inner h2 {
+  background: linear-gradient(90deg, var(--super), #ecdcff);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.reason-overlay.superlike .reason-chip.on {
+  border-color: var(--super);
+  color: var(--super);
+  box-shadow: 0 0 14px rgba(179, 136, 255, 0.3);
+}
+
+.reason-overlay.superlike .reason-send {
+  background: var(--super);
+  color: #1c0f33;
+}
+
+.sh-tally.superlike,
+.brain-stat-num.brain-superlike {
+  color: var(--super);
+}
+
+.swipe-history-item.superlike .sh-verdict {
+  filter: drop-shadow(0 0 4px rgba(179, 136, 255, 0.6));
+}
+
+.brain-memory.superlike {
+  border-left-color: var(--super);
 }
