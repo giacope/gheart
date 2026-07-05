@@ -197,28 +197,6 @@ export interface PRFingerprint {
   ci: CiState;
 }
 
-export interface PrecheckRequest {
-  repo?: string;
-  title: string;
-  /** Short prose summary of the diff the agent is about to open. */
-  summary: string;
-  fingerprint?: Partial<PRFingerprint>;
-}
-
-export interface PrecheckMemory {
-  pr: number;
-  verdict: SwipeVerdict;
-  reason: string;
-  url: string;
-}
-
-export interface PrecheckResponse {
-  predictedVerdict: 'approve' | 'reject' | 'unknown';
-  confidence: number;
-  memories: PrecheckMemory[];
-  advice: string;
-}
-
 export interface ReviewResponse {
   ok: boolean;
   demo: boolean;

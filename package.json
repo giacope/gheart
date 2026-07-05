@@ -12,7 +12,6 @@
     "start": "cross-env NODE_ENV=production tsx server/index.ts",
     "seed:brain": "tsx scripts/seed-brain.ts",
     "precompute": "tsx scripts/precompute.ts",
-    "precheck:demo": "tsx scripts/precheck-demo.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
