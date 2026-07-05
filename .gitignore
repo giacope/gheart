@@ -5,3 +5,7 @@ data/
 .env
 .env.*
 .DS_Store
+
+# Claude Code local state: per-machine settings and throwaway worktrees.
+.claude/worktrees/
+.claude/settings.local.json

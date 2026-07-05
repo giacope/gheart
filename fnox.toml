@@ -4,4 +4,4 @@ recipients = ["age1qx2dpd4rkc72f62898v73hvxj8325rm6tp70tyjugkrzy0qy537sqz08wq"]
 key_file = "~/.config/fnox/age.txt"
 
 [secrets]
-GITHUB_APP_CLIENT_SECRET= { provider = "age", value = "YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBiUEtscmxrUUhrODhwZDdNRng5Q1NCTFdEa1hRcyt4VUZZQzNzTzRpMjBFCmREa1V4REQzVUFWUHgybUhkWVBYZ1FTMlFWTEkvU2k1Yng1ZUxWay9aTm8KLT4gYTBxSictZ3JlYXNlClBxRFNvWWJvS3dYcE8rWUdNeGx4Wktra2xITkVKQQotLS0gRVA3aTA5UElaMkV6TzE3clR6ZGZ4MVkyV290c2VLUHBBNUdVVmZZOFVQMAr09nG3yIkDne3AIeXfTSnn2I5gn5iXL+wogzq0prAsNIQNBJq6115lGpRE4S5RXRbAfeJ6B8xjdwVYtmedHrLIDqKh+mIGPV4=", description = "gheart GitHub App (gheart-c7bc) client secret" }
+GITHUB_APP_CLIENT_SECRET= { provider = "age", value = "YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBkZnlGenpPWkdsU0Q1TXVKazNzdG5VL2tVR1Mydyswa2gzamNVcmxuakdrCklXZmx5Y1lJVHU4dzk1am5jWXI0SkFmYXRyTlRLcnBWM1Q4MkQvcU5jUkkKLT4gRjlGNjpAalAtZ3JlYXNlIDNGbgp3cUZ6aGR6TU5sNnhTdwotLS0gV1J6RHA5RGFRcjZWWFdhWCt3NzIwdTJxVGJ5ZXdCdHIyOHRHYmZlRmhLdwouBwap9k4hFkJD//e/ysJr4Cl4XaOlcsLc0gfcFHAA9ptXOdyqiLsBxBpo4iaVOOEec1PzFa7eVXYfsQGoQhnFeSsyFl06ULw=", description = "gheart GitHub App (gheart-3) client secret" }
