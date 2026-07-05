@@ -6,55 +6,74 @@ function svgClip(svg: string): string {
 }
 
 // Tiny animated SVGs stand in for the "clip of the UI changes" so demo mode
-// works fully offline.
+// works fully offline. Portrait, like the phone screenshots authors attach —
+// the hero renders them full-bleed with object-fit: cover, so content stays
+// clear of the outer ~40px on every side.
 const DARK_MODE_CLIP = svgClip(`
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180">
-  <rect width="320" height="180" fill="#f5f5f7">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 640">
+  <rect width="400" height="640" fill="#f5f5f7">
     <animate attributeName="fill" values="#f5f5f7;#f5f5f7;#17171f;#17171f;#f5f5f7" dur="4s" repeatCount="indefinite"/>
   </rect>
-  <rect x="20" y="20" width="280" height="26" rx="6" fill="#d9d9e3">
+  <rect x="48" y="88" width="304" height="34" rx="8" fill="#d9d9e3">
     <animate attributeName="fill" values="#d9d9e3;#d9d9e3;#2b2b3d;#2b2b3d;#d9d9e3" dur="4s" repeatCount="indefinite"/>
   </rect>
-  <rect x="20" y="60" width="190" height="14" rx="4" fill="#c3c3cf">
+  <rect x="48" y="150" width="220" height="16" rx="5" fill="#c3c3cf">
     <animate attributeName="fill" values="#c3c3cf;#c3c3cf;#3a3a52;#3a3a52;#c3c3cf" dur="4s" repeatCount="indefinite"/>
   </rect>
-  <rect x="20" y="84" width="240" height="14" rx="4" fill="#c3c3cf">
+  <rect x="48" y="180" width="270" height="16" rx="5" fill="#c3c3cf">
     <animate attributeName="fill" values="#c3c3cf;#c3c3cf;#3a3a52;#3a3a52;#c3c3cf" dur="4s" repeatCount="indefinite"/>
   </rect>
-  <circle cx="284" cy="140" r="18" fill="#ffcf33">
+  <rect x="48" y="210" width="180" height="16" rx="5" fill="#c3c3cf">
+    <animate attributeName="fill" values="#c3c3cf;#c3c3cf;#3a3a52;#3a3a52;#c3c3cf" dur="4s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="48" y="260" width="304" height="120" rx="14" fill="#e4e4ec">
+    <animate attributeName="fill" values="#e4e4ec;#e4e4ec;#22222f;#22222f;#e4e4ec" dur="4s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="48" y="410" width="240" height="16" rx="5" fill="#c3c3cf">
+    <animate attributeName="fill" values="#c3c3cf;#c3c3cf;#3a3a52;#3a3a52;#c3c3cf" dur="4s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="48" y="440" width="200" height="16" rx="5" fill="#c3c3cf">
+    <animate attributeName="fill" values="#c3c3cf;#c3c3cf;#3a3a52;#3a3a52;#c3c3cf" dur="4s" repeatCount="indefinite"/>
+  </rect>
+  <circle cx="330" cy="530" r="26" fill="#ffcf33">
     <animate attributeName="fill" values="#ffcf33;#ffcf33;#8f9dff;#8f9dff;#ffcf33" dur="4s" repeatCount="indefinite"/>
   </circle>
-  <text x="24" y="150" font-family="sans-serif" font-size="13" fill="#666">
+  <text x="48" y="540" font-family="sans-serif" font-size="16" fill="#666">
     <animate attributeName="fill" values="#666;#666;#aab;#aab;#666" dur="4s" repeatCount="indefinite"/>
     toggling theme…
   </text>
 </svg>`);
 
 const BUTTON_CLIP = svgClip(`
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180">
-  <rect width="320" height="180" fill="#101018"/>
-  <rect x="90" y="70" width="140" height="42" rx="21" fill="#e94074">
-    <animate attributeName="width" values="140;150;140" dur="1.6s" repeatCount="indefinite"/>
-    <animate attributeName="x" values="90;85;90" dur="1.6s" repeatCount="indefinite"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 640">
+  <rect width="400" height="640" fill="#101018"/>
+  <rect x="70" y="120" width="260" height="150" rx="16" fill="#1a1a26"/>
+  <rect x="70" y="300" width="200" height="14" rx="5" fill="#2b2b3c"/>
+  <rect x="70" y="326" width="150" height="14" rx="5" fill="#2b2b3c"/>
+  <rect x="112" y="400" width="176" height="54" rx="27" fill="#e94074">
+    <animate attributeName="width" values="176;188;176" dur="1.6s" repeatCount="indefinite"/>
+    <animate attributeName="x" values="112;106;112" dur="1.6s" repeatCount="indefinite"/>
   </rect>
-  <text x="160" y="96" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#fff">Buy now</text>
-  <circle cx="160" cy="91" r="0" fill="#ffffff" opacity="0.35">
-    <animate attributeName="r" values="0;60" dur="1.6s" repeatCount="indefinite"/>
+  <text x="200" y="433" text-anchor="middle" font-family="sans-serif" font-size="18" fill="#fff">Buy now</text>
+  <circle cx="200" cy="427" r="0" fill="#ffffff" opacity="0.35">
+    <animate attributeName="r" values="0;80" dur="1.6s" repeatCount="indefinite"/>
     <animate attributeName="opacity" values="0.35;0" dur="1.6s" repeatCount="indefinite"/>
   </circle>
 </svg>`);
 
 const CHART_CLIP = svgClip(`
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180">
-  <rect width="320" height="180" fill="#0e1420"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 640">
+  <rect width="400" height="640" fill="#0e1420"/>
+  <text x="56" y="120" font-family="sans-serif" font-size="17" fill="#8ea2c6">live dashboard ✨</text>
+  <rect x="56" y="150" width="130" height="12" rx="4" fill="#1c2941"/>
   <g fill="#4f8ef7">
-    <rect x="40" y="140" width="30" height="20"><animate attributeName="height" values="20;70;20" dur="2.4s" repeatCount="indefinite"/><animate attributeName="y" values="140;90;140" dur="2.4s" repeatCount="indefinite"/></rect>
-    <rect x="90" y="110" width="30" height="50"><animate attributeName="height" values="50;110;50" dur="2.4s" begin="0.2s" repeatCount="indefinite"/><animate attributeName="y" values="110;50;110" dur="2.4s" begin="0.2s" repeatCount="indefinite"/></rect>
-    <rect x="140" y="120" width="30" height="40"><animate attributeName="height" values="40;90;40" dur="2.4s" begin="0.4s" repeatCount="indefinite"/><animate attributeName="y" values="120;70;120" dur="2.4s" begin="0.4s" repeatCount="indefinite"/></rect>
-    <rect x="190" y="100" width="30" height="60"><animate attributeName="height" values="60;120;60" dur="2.4s" begin="0.6s" repeatCount="indefinite"/><animate attributeName="y" values="100;40;100" dur="2.4s" begin="0.6s" repeatCount="indefinite"/></rect>
-    <rect x="240" y="130" width="30" height="30"><animate attributeName="height" values="30;80;30" dur="2.4s" begin="0.8s" repeatCount="indefinite"/><animate attributeName="y" values="130;80;130" dur="2.4s" begin="0.8s" repeatCount="indefinite"/></rect>
+    <rect x="64" y="460" width="40" height="40"><animate attributeName="height" values="40;140;40" dur="2.4s" repeatCount="indefinite"/><animate attributeName="y" values="460;360;460" dur="2.4s" repeatCount="indefinite"/></rect>
+    <rect x="124" y="400" width="40" height="100"><animate attributeName="height" values="100;220;100" dur="2.4s" begin="0.2s" repeatCount="indefinite"/><animate attributeName="y" values="400;280;400" dur="2.4s" begin="0.2s" repeatCount="indefinite"/></rect>
+    <rect x="184" y="420" width="40" height="80"><animate attributeName="height" values="80;180;80" dur="2.4s" begin="0.4s" repeatCount="indefinite"/><animate attributeName="y" values="420;320;420" dur="2.4s" begin="0.4s" repeatCount="indefinite"/></rect>
+    <rect x="244" y="380" width="40" height="120"><animate attributeName="height" values="120;240;120" dur="2.4s" begin="0.6s" repeatCount="indefinite"/><animate attributeName="y" values="380;260;380" dur="2.4s" begin="0.6s" repeatCount="indefinite"/></rect>
+    <rect x="304" y="440" width="40" height="60"><animate attributeName="height" values="60;160;60" dur="2.4s" begin="0.8s" repeatCount="indefinite"/><animate attributeName="y" values="440;340;440" dur="2.4s" begin="0.8s" repeatCount="indefinite"/></rect>
   </g>
-  <text x="40" y="30" font-family="sans-serif" font-size="13" fill="#8ea2c6">live dashboard ✨</text>
+  <line x1="56" y1="500" x2="344" y2="500" stroke="#1c2941" stroke-width="2"/>
 </svg>`);
 
 function avatar(seed: string, bg: string): string {

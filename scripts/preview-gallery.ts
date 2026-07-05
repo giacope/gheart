@@ -83,9 +83,9 @@ process.stdout.write(`<!doctype html><html><head><meta charset="utf-8"><style>
 body{margin:0;background:radial-gradient(1200px 800px at 50% -10%,#232338,#0d0d14 60%);color:var(--text);
   font-family:-apple-system,'Segoe UI',system-ui,sans-serif;padding:28px}
 h1{font-size:20px;margin:0 0 20px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:22px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px}
 figure{margin:0}
-.card{position:relative;height:175px;border-radius:16px 16px 0 0;overflow:hidden;background:var(--card2);
+.card{position:relative;height:520px;border-radius:20px 20px 0 0;overflow:hidden;background:var(--card2);
   border:1px solid #2b2b3c;box-shadow:0 10px 30px rgba(0,0,0,.4)}
 .hero{width:100%;height:100%;border:0;display:block;object-fit:cover}
 .badge{position:absolute;top:12px;right:12px;font-size:11px;font-weight:700;background:rgba(0,0,0,.6);border-radius:999px;padding:4px 10px}
@@ -94,5 +94,5 @@ figcaption b{color:var(--text);text-transform:uppercase;letter-spacing:.4px;font
 .term{background:linear-gradient(180deg,#0b0b12,#14141d);padding:12px 14px;font:12.5px/1.5 ui-monospace,Menlo,monospace;color:var(--muted)}
 .tbody{display:flex;flex-direction:column;gap:1px}.tl{white-space:pre}
 .c-cmd{color:var(--text)}.c-ok{color:var(--green)}.c-err{color:var(--red)}.c-note{color:var(--blue)}
-</style></head><body><h1>💚 gheart — generated PR previews (one per kind, at hero size)</h1>
+</style></head><body><h1>💚 gheart — generated PR previews (one per kind, at full-bleed hero size)</h1>
 <div class="grid">${tiles}</div><script>${termScript}</script></body></html>`);

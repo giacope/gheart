@@ -74,6 +74,12 @@ export default function TerminalPlayer({ frames, cols = 48 }: { frames: Terminal
 
   return (
     <div className="hero-terminal" style={{ ['--term-cols' as string]: String(cols) }}>
+      <div className="term-chrome" aria-hidden>
+        <span className="term-dot" />
+        <span className="term-dot" />
+        <span className="term-dot" />
+        <span className="term-chrome-title">zsh</span>
+      </div>
       <div className="term-body">
         {lines.map((l, i) => (
           <div key={i} className={lineClass(l)}>

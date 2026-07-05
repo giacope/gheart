@@ -309,7 +309,7 @@ export default function App() {
               canUndo={history.length > 0}
               disabled={prs.length === 0}
             />
-            <p className="hint">swipe → to approve · ← to request changes · ↑ to skip</p>
+            <p className="hint">swipe → approve · ← request changes · ↑ skip · scroll for the full profile</p>
             <SwipeHistory history={history} demo={demo} />
           </>
         )}

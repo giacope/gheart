@@ -19,7 +19,6 @@ interface Props {
 }
 
 const SWIPE_THRESHOLD = 110;
-const SKIP_THRESHOLD = 90;
 const FLY_MS = 320;
 
 interface DragState {
@@ -70,9 +69,9 @@ const SwipeDeck = forwardRef<SwipeDeckHandle, Props>(function SwipeDeck({ prs, o
 
     if (intent.current === 'none') {
       if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
-      // Horizontal (or clearly upward) movement grabs the card; otherwise let
-      // the card body scroll natively.
-      if (Math.abs(dx) > Math.abs(dy) || dy < -24) {
+      // Horizontal movement grabs the card; vertical movement scrolls the
+      // profile natively (skip lives on the ↑ key / action button instead).
+      if (Math.abs(dx) > Math.abs(dy)) {
         intent.current = 'drag';
         e.currentTarget.setPointerCapture(e.pointerId);
       } else {
@@ -81,7 +80,7 @@ const SwipeDeck = forwardRef<SwipeDeckHandle, Props>(function SwipeDeck({ prs, o
       }
     }
     if (intent.current !== 'drag') return;
-    setDrag({ dx, dy: Math.min(dy, 40), dragging: true, flying: null });
+    setDrag({ dx, dy: Math.max(-40, Math.min(dy, 40)), dragging: true, flying: null });
   };
 
   const settle = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -93,7 +92,6 @@ const SwipeDeck = forwardRef<SwipeDeckHandle, Props>(function SwipeDeck({ prs, o
 
     if (drag.dx > SWIPE_THRESHOLD) flyOut('approve');
     else if (drag.dx < -SWIPE_THRESHOLD) flyOut('reject');
-    else if (drag.dy < -SKIP_THRESHOLD) flyOut('skip');
     else setDrag(IDLE);
   };
 
@@ -115,8 +113,7 @@ const SwipeDeck = forwardRef<SwipeDeckHandle, Props>(function SwipeDeck({ prs, o
 
   const likeOpacity = flying === 'approve' ? 1 : Math.min(1, Math.max(0, dx / SWIPE_THRESHOLD));
   const nopeOpacity = flying === 'reject' ? 1 : Math.min(1, Math.max(0, -dx / SWIPE_THRESHOLD));
-  const skipOpacity =
-    flying === 'skip' ? 1 : Math.min(1, Math.max(0, -dy / SKIP_THRESHOLD)) * (Math.abs(dx) < 40 ? 1 : 0);
+  const skipOpacity = flying === 'skip' ? 1 : 0;
 
   return (
     <div className="deck">
