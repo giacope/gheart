@@ -204,6 +204,8 @@ function compatibilityFromMatches(matches: Match[]): Compatibility | null {
 
   const top = matches[0];
   const d = top.decision;
+  const closesLoop =
+    top.decision.verdict === 'reject' && top.addressed.length > 0 && top.outstanding.length === 0;
   let why: string;
   if (d.verdict === 'approve') {
     why = `You approved #${d.pr} (${describeReasons(d.fingerprint.tags.slice(0, 2))}) — this looks like more of the same.`;
@@ -226,6 +228,7 @@ function compatibilityFromMatches(matches: Match[]): Compatibility | null {
     score,
     verdict: score >= 65 ? 'match' : score >= 40 ? 'maybe' : 'pass',
     why,
+    closesLoop,
     citations,
   };
 }
