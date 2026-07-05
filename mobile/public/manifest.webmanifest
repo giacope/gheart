@@ -1,0 +1,19 @@
+{
+  "name": "gheart — swipe your PR reviews",
+  "short_name": "gheart",
+  "description": "Tinder for pull request reviews. Swipe right to approve, left to request changes.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0a0f",
+  "theme_color": "#0a0a0f",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
