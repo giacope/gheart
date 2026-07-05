@@ -112,6 +112,8 @@ export interface Compatibility {
   verdict: 'match' | 'maybe' | 'pass';
   /** Human-readable line, e.g. "You rejected #327 for the same reason". */
   why: string;
+  /** True when this PR addresses every reason a similar PR was rejected for — the loop-closure beat. */
+  closesLoop?: boolean;
   citations: MemoryCitation[];
 }
 

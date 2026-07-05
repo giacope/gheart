@@ -81,6 +81,9 @@ export default function PRCard({ pr }: { pr: PRProfile }) {
 
         {pr.compatibility && (
           <div className={`brain-row ${pr.compatibility.verdict}`}>
+            {pr.compatibility.closesLoop && (
+              <div className="loop-ribbon">↩ back — and it listened</div>
+            )}
             <div className="brain-score">
               🧠 {pr.compatibility.score}%{' '}
               {pr.compatibility.verdict === 'match'
