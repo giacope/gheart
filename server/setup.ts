@@ -63,7 +63,9 @@ export function setupRouter(auth: Auth, store: Store): Router {
       url: base,
       redirect_url: `${base}/api/setup/callback`,
       callback_urls: [`${base}/api/auth/callback`],
-      setup_url: base,
+      // No setup_url: it's incompatible with request_oauth_on_install
+      // (GitHub 500s on the manifest page when both are set), and the
+      // OAuth-on-install redirect already lands users back in gheart.
       public: false,
       request_oauth_on_install: true,
       default_permissions: {
