@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PRProfile, ReviewRequest, SessionInfo, SwipeVerdict } from '../shared/types';
 import { fetchPRs, fetchSession, logout, sendReview, undoReview } from './api';
 import ActionBar from './components/ActionBar';
+import AgentView from './components/AgentView';
 import BrainPanel from './components/BrainPanel';
 import EmptyDeck from './components/EmptyDeck';
 import LoginScreen from './components/LoginScreen';
@@ -28,6 +29,7 @@ export default function App() {
   const [match, setMatch] = useState<PRProfile | null>(null);
   const [pendingReject, setPendingReject] = useState<PRProfile | null>(null);
   const [brainOpen, setBrainOpen] = useState(false);
+  const [agentOpen, setAgentOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const deck = useRef<SwipeDeckHandle>(null);
   const toastTimer = useRef<number>();
@@ -231,6 +233,13 @@ export default function App() {
         >
           🧠 brain
         </button>
+        <button
+          className="agent-button"
+          onClick={() => setAgentOpen(true)}
+          title="Watch an agent pre-check against the brain"
+        >
+          🤖 agent
+        </button>
         {demo && (
           <a
             className="demo-badge"
@@ -291,6 +300,7 @@ export default function App() {
       </main>
 
       {brainOpen && <BrainPanel currentPrs={prs} onClose={() => setBrainOpen(false)} />}
+      {agentOpen && <AgentView onClose={() => setAgentOpen(false)} />}
       {match && <MatchOverlay pr={match} />}
       {pendingReject && <ReasonChips pr={pendingReject} onSubmit={handleReasons} />}
       {toast && <div className="toast">{toast}</div>}
