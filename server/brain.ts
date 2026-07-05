@@ -131,6 +131,11 @@ const REASON_LABELS: Record<string, string> = {
   'wrong-layer': 'living in the wrong layer',
   duplicate: 'duplicating existing work',
   'vibe-off': 'the vibe being off',
+  clean: 'being clean',
+  'well-tested': 'having tests',
+  small: 'being small',
+  'great-fit': 'fitting well',
+  'nice-docs': 'being documented',
 };
 
 function describeReasons(reasons: string[]): string {
@@ -208,7 +213,7 @@ function compatibilityFromMatches(matches: Match[]): Compatibility | null {
     top.decision.verdict === 'reject' && top.addressed.length > 0 && top.outstanding.length === 0;
   let why: string;
   if (d.verdict === 'approve') {
-    why = `You approved #${d.pr} (${describeReasons(d.fingerprint.tags.slice(0, 2))}) — this looks like more of the same.`;
+    why = `You approved #${d.pr} (${d.reasons.length ? describeReasons(d.reasons) : describeReasons(d.fingerprint.tags.slice(0, 2))}) — this looks like more of the same.`;
   } else if (top.addressed.length > 0 && top.outstanding.length === 0) {
     why = `You rejected #${d.pr} for ${describeReasons(d.reasons)} — this revision fixes exactly that.`;
   } else if (top.applicable.length > 0) {
