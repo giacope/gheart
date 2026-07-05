@@ -1,0 +1,17 @@
+# Keep the build context small and, crucially, keep host state/secrets out of
+# the image: data/ holds the local gheart.json (with stored App creds) and
+# server/data holds the local brain. Prod uses the Fly volume (/data) instead.
+node_modules
+dist
+data
+server/data
+.git
+.github
+.claude
+.firecrawl
+docs
+scratchpad
+*.log
+npm-debug.log*
+.DS_Store
+# Note: fnox.toml is intentionally NOT ignored — the entrypoint decrypts it.

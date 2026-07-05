@@ -1,0 +1,40 @@
+# gheart on Fly — one machine serving the API + built React app, one persistent
+# volume for the brain + swipe history.
+#
+# Secrets: the ONLY Fly secret is GHEART_AGE_KEY_B64 (set via `flyctl secrets`;
+# base64 of the age identity — do NOT name it FNOX_AGE_KEY, fnox would read that
+# as an inline identity and ignore the key file). The
+# App id/slug/client-id below are NOT secret (already committed in mise.toml),
+# and GITHUB_APP_CLIENT_SECRET is decrypted from the committed, age-encrypted
+# fnox.toml at boot by scripts/docker-entrypoint.sh.
+app = "gheart"
+primary_region = "iad"
+
+[build]
+
+[env]
+  NODE_ENV = "production"
+  PORT = "8788"
+  GHEART_BASE_URL = "https://gheart.fly.dev"
+  GHEART_DATA = "/data/gheart.json"
+  GHEART_BRAIN_DIR = "/data"
+  GITHUB_APP_ID = "4219863"
+  GITHUB_APP_SLUG = "gheart-3"
+  GITHUB_APP_CLIENT_ID = "Iv23li7Ni8bAxRo9z7xu"
+
+# Persistent disk: brain.jsonl + gheart.json survive redeploys/restarts.
+[[mounts]]
+  source = "gheart_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8788
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
