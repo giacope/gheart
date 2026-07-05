@@ -76,10 +76,68 @@ npm run precompute     # offline: Agent SDK reviews each demo PR → server/data
 
 ## The profile card
 
-- **Hero** — the first image/video found in the PR description (GitHub attachment links, markdown images, `<img>`/`<video>` tags), or a mood banner if the PR has no visuals. PRs list their age like a dating profile lists, well, age.
+- **Hero** — the first image/video found in the PR description (GitHub attachment links, markdown images, `<img>`/`<video>` tags), or — when the author left no visuals — an [auto-generated preview](#auto-generated-previews) tailored to the kind of change. PRs list their age like a dating profile lists, well, age.
 - **Mergeability score** — a 0–100 "how easy is this to say yes to": small diffs, green CI, real descriptions, and tests score high; huge failing drafts do not.
 - **TL;DR / ELI5** — Claude-written when an API key is present, heuristic otherwise.
 - **Vitals** — +/− lines, files, commits, comments, CI status, biggest changed files, labels, branch → base.
+
+## Auto-generated previews
+
+When a PR has no author-supplied screenshot, gheart synthesizes a **kind-aware
+preview** for the card hero from the diff alone — routed by the changed file
+paths. Each artifact is self-contained and inert (an animated SVG, a CSS-only
+sandboxed iframe, or a played-back terminal session), so it needs no repo build
+and never blocks a request. Author media still wins when present.
+
+| Change kind | Preview |
+| --- | --- |
+| **frontend** (`.tsx`/`.css`/…) | a live browser mock (theme toggle · CTA · card grid) |
+| **cli** (`cmd/`·`cli/`·`bin/`) | an ASCII terminal animation of the command running |
+| **api** (`routes/`·`controllers/`…) | a request → response panel with a JSON body |
+| **migration** (`.sql`·`migrations/`) | an animated before/after schema diff |
+| **docs** (`.md`·`docs/`) | a page with the added lines typing in |
+| **tests** (`*.test.*`) | a green test-runner filling up |
+| everything else | a diff-bar + commit-graph fallback |
+
+Preview a card of every kind at once (writes a standalone HTML gallery):
+
+```bash
+npx tsx scripts/preview-gallery.ts > /tmp/gallery.html && open /tmp/gallery.html
+```
+
+### Reproducing the example repo
+
+`scripts/seed-examples-repo.sh` spins up a **throwaway GitHub repo** containing
+two real PRs per preview kind, so you can point gheart at live pull requests and
+watch every preview render. The repo name gets a unique hash suffix, so it's safe
+to run as many times as you like.
+
+**Requires** the [GitHub CLI](https://cli.github.com) authenticated (`gh auth login`) and `git`.
+
+```bash
+./scripts/seed-examples-repo.sh
+```
+
+This creates `<you>/gheart-preview-examples-<hash>`, scaffolds a small runnable
+Vite app plus `cli/server/db/docs/lib` directories, and opens 14 PRs (frontend,
+cli, api, migration, docs, tests, generic × 2). It prints the repo URL and the
+exact commands to view and delete it. Then:
+
+```bash
+# review the seeded PRs in gheart (single-token mode)
+GITHUB_TOKEN=$(gh auth token) GHEART_REPO=<you>/gheart-preview-examples-<hash> npm run dev
+
+# clean up when you're done
+gh repo delete <you>/gheart-preview-examples-<hash> --yes
+```
+
+Knobs (all optional):
+
+| Env var | Default | Effect |
+| --- | --- | --- |
+| `GHEART_EXAMPLES_HASH` | random 6 hex chars | Fixed suffix for a predictable repo name. |
+| `GHEART_EXAMPLES_PREFIX` | `gheart-preview-examples` | Repo name prefix. |
+| `GHEART_EXAMPLES_VISIBILITY` | `public` | `public` or `private`. |
 
 ## Controls
 
@@ -96,13 +154,17 @@ Approving triggers the *It's a merge!* screen. Obviously.
 
 ```bash
 npm run dev     # dev servers with hot reload
-npm test        # vitest unit tests (summarizer, match score, media extraction)
+npm test        # vitest unit tests (summarizer, match score, media extraction, previews)
 npm run build   # typecheck + production bundle to dist/
 npm start       # serve the built app + API on :8788
+
+# previews
+npx tsx scripts/preview-gallery.ts > /tmp/gallery.html   # one card of every kind
+./scripts/seed-examples-repo.sh                          # a live example repo of PRs
 ```
 
 ## How it's put together
 
-- `server/` — small Express API: `GET /api/prs` (fetches open PRs, enriches with files/checks, summarizes, and filters out ones you've already reviewed), `POST /api/review` (submits the review as you), `GET /api/repos` (repos from the app's installations), `/api/auth/*` (GitHub App user flow + cookie sessions + token refresh), and `/api/setup` (one-click app creation via the manifest flow). `store.ts` is a tiny JSON-file store for app credentials, users, sessions, and per-user swipe history. `mock.ts` powers demo mode with fully offline animated-SVG "UI clips".
+- `server/` — small Express API: `GET /api/prs` (fetches open PRs, enriches with files/checks, summarizes, and filters out ones you've already reviewed), `POST /api/review` (submits the review as you), `GET /api/repos` (repos from the app's installations), `/api/auth/*` (GitHub App user flow + cookie sessions + token refresh), and `/api/setup` (one-click app creation via the manifest flow). `store.ts` is a tiny JSON-file store for app credentials, users, sessions, and per-user swipe history. `mock.ts` powers demo mode with fully offline animated-SVG "UI clips". `preview/` classifies each PR by its changed files and synthesizes the kind-aware hero preview (see [Auto-generated previews](#auto-generated-previews)).
 - `src/` — React + Vite frontend. `SwipeDeck` implements the drag physics with pointer events (no gesture library): rotation follows the drag, stamps (`APPROVE` / `NOPE` / `SKIP`) fade in with distance, and vertical scrolling inside the card still works.
 - `shared/types.ts` — the `PRProfile` contract both sides speak.
