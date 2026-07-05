@@ -1103,6 +1103,49 @@ em.del {
   gap: 10px;
 }
 
+/* Tabs: all-time memories vs. this session's swipes. */
+.brain-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 12px 18px 0;
+}
+
+.brain-tab {
+  flex: 1;
+  background: var(--card);
+  border: 1px solid #23232f;
+  color: var(--muted);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.brain-tab:hover {
+  color: var(--text);
+}
+
+.brain-tab.active {
+  border-color: var(--green);
+  color: var(--text);
+  background: var(--card-2);
+}
+
+.brain-tab-count {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+/* The session tab reuses the drawer's rows, but fills the panel instead of the
+   drawer's short capped list. */
+.brain-session .swipe-history-list {
+  max-height: none;
+  overflow: visible;
+  border-top: none;
+  padding: 0;
+}
+
 .brain-panel-msg {
   color: var(--muted);
   font-size: 14px;

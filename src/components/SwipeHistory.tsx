@@ -12,12 +12,52 @@ interface Props {
   demo: boolean;
 }
 
-const VERDICT_META: Record<SwipeVerdict, { icon: string; label: string; cls: string }> = {
+export const VERDICT_META: Record<SwipeVerdict, { icon: string; label: string; cls: string }> = {
   approve: { icon: '💚', label: 'Approved', cls: 'approve' },
   superlike: { icon: '⭐', label: 'Super approved', cls: 'superlike' },
   reject: { icon: '💔', label: 'Changes requested', cls: 'reject' },
   skip: { icon: '🙈', label: 'Skipped', cls: 'skip' },
 };
+
+/**
+ * The bare list of swipe rows, newest-first order controlled by the caller.
+ * Shared by the deck drawer below and the Brain panel's "This session" tab so
+ * both surfaces render byte-identical rows.
+ */
+export function SwipeHistoryList({ entries, demo }: { entries: HistoryEntry[]; demo: boolean }) {
+  return (
+    <ul className="swipe-history-list">
+      {entries.map(({ pr, verdict }) => {
+        const meta = VERDICT_META[verdict];
+        return (
+          <li key={pr.id} className={`swipe-history-item ${meta.cls}`}>
+            <span className="sh-verdict" title={meta.label}>
+              {meta.icon}
+            </span>
+            <span className="sh-body">
+              <span className="sh-pr">
+                <code>#{pr.number}</code> {pr.title}
+              </span>
+              <span className="sh-meta">
+                {meta.label}
+                {demo && verdict !== 'skip' ? ' · demo, not sent' : ''} · {pr.repo}
+              </span>
+            </span>
+            <a
+              className="sh-link"
+              href={pr.url}
+              target="_blank"
+              rel="noreferrer"
+              title="Open this PR on GitHub"
+            >
+              GitHub ↗
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
 
 /**
  * A collapsible drawer at the bottom of the deck showing this session's swipes,
@@ -52,38 +92,7 @@ export default function SwipeHistory({ history, demo }: Props) {
         <span className="swipe-history-caret">{open ? '▾' : '▸'}</span>
       </button>
 
-      {open && (
-        <ul className="swipe-history-list">
-          {entries.map(({ pr, verdict }) => {
-            const meta = VERDICT_META[verdict];
-            return (
-              <li key={pr.id} className={`swipe-history-item ${meta.cls}`}>
-                <span className="sh-verdict" title={meta.label}>
-                  {meta.icon}
-                </span>
-                <span className="sh-body">
-                  <span className="sh-pr">
-                    <code>#{pr.number}</code> {pr.title}
-                  </span>
-                  <span className="sh-meta">
-                    {meta.label}
-                    {demo && verdict !== 'skip' ? ' · demo, not sent' : ''} · {pr.repo}
-                  </span>
-                </span>
-                <a
-                  className="sh-link"
-                  href={pr.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  title="Open this PR on GitHub"
-                >
-                  GitHub ↗
-                </a>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+      {open && <SwipeHistoryList entries={entries} demo={demo} />}
     </section>
   );
 }
