@@ -6,7 +6,10 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/api': 'http://localhost:8788',
+      // changeOrigin must stay false (vite's string shorthand enables it):
+      // the API builds OAuth/setup callback URLs from the Host header, which
+      // must remain the browser-facing origin (:5173), not the API port.
+      '/api': { target: 'http://localhost:8788', changeOrigin: false },
     },
   },
   build: {
