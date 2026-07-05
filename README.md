@@ -30,6 +30,8 @@ gheart has three auth modes, picked automatically from the environment:
    GITHUB_CLIENT_ID=xxx GITHUB_CLIENT_SECRET=yyy npm run dev
    ```
 
+   This repo manages those with [mise](https://mise.jdx.dev) + [fnox](https://fnox.jdx.dev): `mise.toml` sets `GITHUB_CLIENT_ID` and pulls `GITHUB_CLIENT_SECRET` from the encrypted `fnox.toml` (age-encrypted; decryption needs the key in `~/.config/fnox/age.txt`). With mise activated, just `npm run dev` — the env is already there. To rotate the secret: `fnox set GITHUB_CLIENT_SECRET`. Without the age key, mise env resolution fails — fall back to plain env vars or your own fnox key.
+
 2. **Single token** — quick and personal, no OAuth app needed:
 
    ```bash

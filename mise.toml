@@ -1,0 +1,8 @@
+[tools]
+node = "22"
+
+[env]
+# GitHub OAuth app for gheart (client IDs aren't secret; the secret lives
+# encrypted in fnox.toml and needs the age key in ~/.config/fnox/age.txt).
+GITHUB_CLIENT_ID = "Ov23lir0zUbF5m22Hnnf"
+GITHUB_CLIENT_SECRET = "{{ exec(command='fnox get GITHUB_CLIENT_SECRET') }}"
